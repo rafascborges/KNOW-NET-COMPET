@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "full_name": "John Doe",
+        "Email": "JOHN.DOE@EXAMPLE.COM",
+        "campaign": "Summer Sale"
+    },
+    {
+        "id": 2,
+        "full_name": "Jane Smith",
+        "email": "Jane.Smith@Example.com",
+        "campaign": "Winter Promo"
+    },
+    {
+        "id": 2,
+        "full_name": "Rafael Borges",
+        "email": "Rafael.Borges@Example.com",
+        "campaign": "Winter Promo"
+    }
+]
