@@ -8,7 +8,11 @@ from elt_core.transformations import (
     drop_columns,
     add_column,
     drop_duplicates,
-    convert_dates_to_iso
+    convert_dates_to_iso,
+    normalize_locations,
+    enrich_location_from_municipality,
+    enrich_location_from_district,
+    map_location_values
 )
 
 def test_to_dataframe_list():
@@ -84,3 +88,99 @@ def test_convert_dates_to_iso():
     # Invalid date becomes NaT, which is handled by to_dict later, 
     # but here it stays as NaT in the DataFrame
     assert pd.isna(converted.iloc[1]["date"])
+
+def test_normalize_locations():
+    countries = {"Portugal", "Spain"}
+    df = pd.DataFrame([
+        {
+            "loc": [
+                {"country": None, "district": "Portugal", "municipality": "Lisbon"},
+                {"country": "Spain", "district": "Madrid", "municipality": "Madrid"}
+            ]
+        },
+        {
+            "loc": [
+                {"country": None, "district": "Unknown", "municipality": "Spain"}
+            ]
+        }
+    ])
+    
+    normalized = normalize_locations(df, "loc", countries)
+    
+    # Row 1, Item 1: Portugal moved from district to country
+    locs1 = normalized.iloc[0]["loc"]
+    assert locs1[0]["country"] == "Portugal"
+    assert locs1[0]["district"] is None
+    
+    # Row 1, Item 2: Already correct, no change
+    assert locs1[1]["country"] == "Spain"
+    
+    # Row 2, Item 1: Spain moved from municipality to country
+    locs2 = normalized.iloc[1]["loc"]
+    assert locs2[0]["country"] == "Spain"
+    assert locs2[0]["municipality"] is None
+
+def test_enrich_location_from_municipality():
+    lookup = {"Lisbon": ("Portugal", "Lisbon District"), "Madrid": ("Spain", "Madrid District")}
+    df = pd.DataFrame([
+        {
+            "loc": [
+                {"country": None, "district": None, "municipality": "Lisbon"},
+                {"country": None, "district": None, "municipality": "Unknown"}
+            ]
+        }
+    ])
+    
+    enriched = enrich_location_from_municipality(df, "loc", lookup)
+    
+    locs = enriched.iloc[0]["loc"]
+    
+    # Item 1: Enriched
+    assert locs[0]["country"] == "Portugal"
+    assert locs[0]["district"] == "Lisbon District"
+    
+    # Item 2: Not enriched (unknown municipality)
+    assert locs[1]["country"] is None
+    assert locs[1]["district"] is None
+
+def test_enrich_location_from_district():
+    lookup = {"Lisbon District": ["Lisbon"], "Porto District": ["Porto"]}
+    df = pd.DataFrame([
+        {
+            "loc": [
+                {"country": None, "district": "Lisbon District"},
+                {"country": None, "district": "Unknown District"}
+            ]
+        }
+    ])
+    
+    enriched = enrich_location_from_district(df, "loc", lookup)
+    
+    locs = enriched.iloc[0]["loc"]
+    
+    # Item 1: Enriched (district in lookup)
+    assert locs[0]["country"] == "Portugal"
+    
+    # Item 2: Not enriched (district not in lookup)
+    assert locs[1]["country"] is None
+
+def test_map_location_values():
+    lookup = {"OldName": "NewName"}
+    df = pd.DataFrame([
+        {
+            "loc": [
+                {"country": "OldName", "district": "Dist1"},
+                {"country": "CorrectName", "district": "Dist2"}
+            ]
+        }
+    ])
+    
+    mapped = map_location_values(df, "loc", "country", lookup)
+    
+    locs = mapped.iloc[0]["loc"]
+    
+    # Item 1: Mapped
+    assert locs[0]["country"] == "NewName"
+    
+    # Item 2: Unchanged
+    assert locs[1]["country"] == "CorrectName"

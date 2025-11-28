@@ -92,6 +92,11 @@ class BaseDataSource(ABC):
             doc = item.copy()
             if self.id_column and self.id_column in doc:
                 doc['_id'] = str(doc[self.id_column])
+            
+            # Remove _rev if present to avoid conflicts when saving to a new database
+            if '_rev' in doc:
+                del doc['_rev']
+                
             docs_batch.append(doc)
         
         self.db_connector.save_documents_bulk(db_name, docs_batch)
@@ -128,15 +133,6 @@ class BaseDataSource(ABC):
         # Fetch ALL data from Bronze
         all_bronze_docs = self.get_data('bronze')
         
-        # Since we removed the wrapper, the docs ARE the data (minus _id/_rev)
-        # We should filter out _id and _rev before transforming if we don't want them to interfere,
-        # or just pass them along. Usually best to pass them along or let transform handle it.
-        # But wait, if we load them back, they have _id and _rev.
-        # If we transform and save to silver, we might want to keep the same _id if it was custom,
-        # or let silver generate new ones if the transform changes the granularity.
-        # The user asked for "id_column" to be used as _id.
-        # If we read from bronze, we get the _id.
-        
         print(f"Fetched {len(all_bronze_docs)} records. Applying transformations...")
         
         # Transform
@@ -144,7 +140,7 @@ class BaseDataSource(ABC):
         
         # Load Silver (batching handled inside load_silver if we pass a list)
         if isinstance(clean_data, list):
-            batch_size = 50000 # Use a reasonable batch size for silver loading
+            batch_size = 5000 # Use a reasonable batch size for silver loading
             total_transformed = len(clean_data)
             for i in range(0, total_transformed, batch_size):
                 batch = clean_data[i:i + batch_size]

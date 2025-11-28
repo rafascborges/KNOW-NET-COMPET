@@ -24,11 +24,12 @@ def main():
 
     # Configuration of sources: (SourceClass, id_column, filename)
     sources_config = [
-        #(MarketingSource, 'id', 'marketing_sample.json'),
-        (Contracts2Source, 'contract_id', 'contracts_2009_2024.parquet'),
+        #(MarketingSource, 'marketing_sample.json', 'id'),
+        #(Contracts2Source, 'contracts_2009_2024.parquet', 'contract_id'),
+        (AnuarioOCCSource, 'anuario_occ_table.csv'),
     ]
 
-    for source_class, id_column, filename in sources_config:
+    for source_class, filename, id_column in sources_config:
         file_path = data_dir / filename
 
         if not file_path.exists():
@@ -39,10 +40,19 @@ def main():
         print(f"Processing file: {file_path}")
         try:
             source_instance = source_class(file_path, db_connector, id_column)
-            #source_instance.run()
-            source_instance.get_data('bronze')
-            source_instance.transform()
-            source_instance.load_silver()
+            source_instance.run()
+            
+            # # Transform module:
+            # bronze_data = source_instance.get_data('bronze')
+            # print("Starting transformation...")
+            # transformed_data = source_instance.transform(bronze_data)
+
+            # batch_size = 5000 # Use a reasonable batch size for silver loading
+            # total_transformed = len(transformed_data)
+            # for i in range(0, total_transformed, batch_size):
+            #     batch = transformed_data[i:i + batch_size]
+            #     source_instance.load_silver(batch)
+        
 
 
         except Exception as e:

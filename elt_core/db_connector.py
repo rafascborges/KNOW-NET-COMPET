@@ -121,7 +121,8 @@ class DBConnector:
             resp = self.session.get(db_url, params=params)
             resp.raise_for_status()
             
-            data = resp.json()
+            # Use ujson for faster parsing
+            data = ujson.loads(resp.content)
             # Extract the actual documents from the 'rows'
             # each row has {id, key, value, doc}
             docs = [row['doc'] for row in data.get('rows', []) if 'doc' in row]
