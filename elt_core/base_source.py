@@ -20,6 +20,39 @@ class BaseDataSource(ABC):
         """
         return self.__class__.__name__.lower().replace('source', '')
 
+    def _prepare_documents(self, items):
+        """
+        Prepares a list of items for saving to the database.
+        - Sets _id from id_column if present.
+        - Removes _rev to avoid conflicts.
+        """
+        docs_batch = []
+        for item in items:
+            doc = item.copy()
+            if self.id_column and self.id_column in doc:
+                doc['_id'] = str(doc[self.id_column])
+            
+            # Remove _rev if present to avoid conflicts when saving to a new database
+            if '_rev' in doc:
+                del doc['_rev']
+                
+            docs_batch.append(doc)
+        return docs_batch
+
+    def _save_in_batches(self, items, db_name, batch_size=5000):
+        """
+        Prepares and saves items to the database in batches.
+        """
+        if isinstance(items, dict):
+            items = [items]
+            
+        total = len(items)
+        for i in range(0, total, batch_size):
+            batch = items[i:i + batch_size]
+            docs_batch = self._prepare_documents(batch)
+            self.db_connector.save_documents_bulk(db_name, docs_batch)
+            print(f"Saved batch of {len(docs_batch)} docs to '{db_name}'")
+
     def extract(self, batch_size=5000):
         """
         Yields batches of data from the file.
@@ -49,21 +82,12 @@ class BaseDataSource(ABC):
         else:
             raise ValueError(f"Unsupported file extension: {ext}")
 
-    def load_bronze(self, batch_data):
+    def load_bronze(self, batch_data, batch_size=5000):
         """
         Dumps a batch of raw data into the 'bronze' database.
         """
         db_name = f"{self.source_name}_bronze"
-        
-        docs_batch = []
-        for item in batch_data:
-            doc = item.copy()
-            if self.id_column and self.id_column in doc:
-                doc['_id'] = str(doc[self.id_column])
-            docs_batch.append(doc)
-        
-        self.db_connector.save_documents_bulk(db_name, docs_batch)
-        print(f"Saved batch of {len(docs_batch)} docs to '{db_name}'")
+        self._save_in_batches(batch_data, db_name, batch_size)
 
     @abstractmethod
     def transform(self, data):
@@ -73,34 +97,12 @@ class BaseDataSource(ABC):
         """
         pass
 
-    def load_silver(self, transformed_batch_data):
+    def load_silver(self, transformed_batch_data, batch_size=5000):
         """
         Saves a batch of transformed data to the 'silver' database.
         """
         db_name = f"{self.source_name}_silver"
-        
-        # Ensure data is a list
-        if isinstance(transformed_batch_data, dict):
-            items = [transformed_batch_data]
-        elif isinstance(transformed_batch_data, list):
-            items = transformed_batch_data
-        else:
-            raise ValueError("Transformed data must be a dict or list")
-
-        docs_batch = []
-        for item in items:
-            doc = item.copy()
-            if self.id_column and self.id_column in doc:
-                doc['_id'] = str(doc[self.id_column])
-            
-            # Remove _rev if present to avoid conflicts when saving to a new database
-            if '_rev' in doc:
-                del doc['_rev']
-                
-            docs_batch.append(doc)
-        
-        self.db_connector.save_documents_bulk(db_name, docs_batch)
-        print(f"Saved batch of {len(docs_batch)} docs to '{db_name}'")
+        self._save_in_batches(transformed_batch_data, db_name, batch_size)
 
     def get_data(self, stage):
         """
@@ -110,43 +112,9 @@ class BaseDataSource(ABC):
         print(f"Fetching all documents from {db_name}...")
         return self.db_connector.get_all_documents(db_name)
 
+    @abstractmethod
     def run(self):
         """
-        Chains the steps together using Staged ELT.
-        Phase 1: Ingest (Stream -> Bronze)
-        Phase 2: Transform (Bronze -> Memory -> Silver)
+        Abstract method to run the pipeline.
         """
-        print(f"Starting pipeline for {self.file_path}...")
-        
-        # Phase 1: Ingestion
-        print("Phase 1: Ingestion (Stream -> Bronze)")
-        total_ingested = 0
-        for i, raw_batch in enumerate(self.extract()):
-            self.load_bronze(raw_batch)
-            print(f"Batch {i+1} ingested.")
-            total_ingested += len(raw_batch)
-        print(f"Ingestion complete. {total_ingested} records loaded to bronze.")
-
-        # Phase 2: Transformation
-        print("Phase 2: Transformation (Bronze -> Silver)")
-        
-        # Fetch ALL data from Bronze
-        all_bronze_docs = self.get_data('bronze')
-        
-        print(f"Fetched {len(all_bronze_docs)} records. Applying transformations...")
-        
-        # Transform
-        clean_data = self.transform(all_bronze_docs)
-        
-        # Load Silver (batching handled inside load_silver if we pass a list)
-        if isinstance(clean_data, list):
-            batch_size = 5000 # Use a reasonable batch size for silver loading
-            total_transformed = len(clean_data)
-            for i in range(0, total_transformed, batch_size):
-                batch = clean_data[i:i + batch_size]
-                self.load_silver(batch)
-        else:
-            # If transform returns a dict (single item), just load it
-            self.load_silver(clean_data)
-            
-        print(f"Pipeline finished successfully.")
+        pass

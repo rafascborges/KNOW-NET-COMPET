@@ -100,3 +100,101 @@ class Contracts2Source(BaseDataSource):
         logger.info(f"Transformation complete. Final row count: {final_count}. Total dropped: {initial_count - final_count}")
 
         return to_dict(df)
+
+    def extract_nifs(self, data, columns):
+        """
+        Extracts unique NIFs from specified columns and returns them.
+        Expected column structure: list of dicts [{'nif': '...', ...}, ...]
+        """
+        logger.info(f"Extracting NIFs from columns: {columns}")
+        unique_nifs = set()
+        
+        # Ensure data is a list of dicts
+        if isinstance(data, dict):
+            data = [data]
+            
+        for row in data:
+            for col in columns:
+                if col in row and row[col]:
+                    val = row[col]
+                    # Handle if it's a string representation of a list (though transform should have handled it, 
+                    # but raw bronze data might be passed directly? No, we usually pass transformed data)
+                    # The user said "In each we have a list of dictionaries".
+                    # Let's assume it's already a python list of dicts if we pass transformed data,
+                    # or we might need to parse it if it's coming from raw.
+                    # Ideally we call this on transformed data.
+                    
+                    if isinstance(val, list):
+                        for item in val:
+                            if isinstance(item, dict) and 'nif' in item:
+                                nif = item['nif']
+                                if nif:
+                                    unique_nifs.add(str(nif))
+                    elif isinstance(val, dict) and 'nif' in val:
+                         nif = val['nif']
+                         if nif:
+                             unique_nifs.add(str(nif))
+
+        logger.info(f"Found {len(unique_nifs)} unique NIFs.")
+        
+        if not unique_nifs:
+            return
+
+        # Prepare documents for queue
+        docs = []
+        for nif in unique_nifs:
+            # Basic validation: NIFs are usually numeric and have 9 digits in Portugal, 
+            # but let's just ensure it's not empty for now.
+            if nif.strip():
+                docs.append({
+                    "_id": nif,
+                    "nif": nif,
+                    "status": "pending",
+                    "source": "contracts"
+                })
+        
+        return docs
+
+    def run(self, batch_size=5000):
+        """
+        Chains the steps together using Staged ELT.
+        Phase 1: Ingest (Stream -> Bronze)
+        Phase 2: Transform (Bronze -> Memory -> Silver)
+        """
+        # print(f"Starting pipeline for {self.file_path}...")
+        
+        # # Phase 1: Ingestion
+        # print("Phase 1: Ingestion (Stream -> Bronze)")
+        # total_ingested = 0
+
+        # raw_data = self.extract()
+        
+        # self.load_bronze(raw_data, batch_size)
+          
+        # print(f"Ingestion complete. {total_ingested} records loaded to bronze.")
+
+        # # Phase 2: Transformation
+        # print("Phase 2: Transformation (Bronze -> Silver)")
+        
+        # # Fetch ALL data from Bronze
+        # all_bronze_docs = self.get_data('bronze')
+        # print(f"Fetched {len(all_bronze_docs)} records. Applying transformations...")
+        
+        # # Transform
+        # clean_data = self.transform(all_bronze_docs)
+        
+        # # Load Silver
+        # self.load_silver(clean_data, batch_size)
+        
+        # print(f"Pipeline finished successfully.")
+
+
+        ### TESTES 
+        silver_data = self.get_data('silver')
+        print(f"Fetched {len(silver_data)} records. Applying transformations...")
+
+        unique_nifs = self.extract_nifs(silver_data, ['contracted', 'contracting_agency', 'contestants'])
+        print(f"Found {len(unique_nifs)} unique NIFs.")
+
+        self._save_in_batches(unique_nifs, "nifs_scrape_queue", batch_size=5000)
+        print(f"Saved {len(unique_nifs)} NIFs to queue.")
