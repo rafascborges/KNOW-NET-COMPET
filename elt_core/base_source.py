@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+import logging
+import os
 import json
 import csv
 import datetime
@@ -11,6 +13,37 @@ class BaseDataSource(ABC):
         self.file_path = Path(file_path)
         self.db_connector = db_connector
         self.id_column = id_column
+        self.logger = self._setup_logger()
+
+    def _setup_logger(self):
+        """
+        Configures a logger for the source.
+        """
+        log_path = os.getenv("LOG_PATH", "logs")
+        log_dir = Path(log_path)
+        log_dir.mkdir(parents=True, exist_ok=True)
+
+        logger = logging.getLogger(self.source_name)
+        
+        log_level_str = os.getenv("LOG_LEVEL", "INFO").upper()
+        log_level = getattr(logging, log_level_str, logging.INFO)
+        logger.setLevel(log_level)
+
+        # Avoid adding handlers if they already exist
+        if not logger.handlers:
+            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+            # File Handler
+            file_handler = logging.FileHandler(log_dir / f"{self.source_name}.log")
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)
+
+            # Stream Handler
+            stream_handler = logging.StreamHandler()
+            stream_handler.setFormatter(formatter)
+            logger.addHandler(stream_handler)
+        
+        return logger
 
     @property
     def source_name(self):
