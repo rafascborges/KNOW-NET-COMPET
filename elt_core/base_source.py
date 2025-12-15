@@ -46,12 +46,13 @@ class BaseDataSource(ABC):
         return logger
 
     @property
+    @abstractmethod
     def source_name(self):
         """
-        Derives source name from class name.
-        e.g. MarketingSource -> marketing
+        Abstract property for the source name.
+        Must be implemented by subclasses.
         """
-        return self.__class__.__name__.lower().replace('source', '')
+        pass
 
     def _prepare_documents(self, items):
         """

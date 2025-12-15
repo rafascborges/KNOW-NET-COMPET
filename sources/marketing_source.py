@@ -1,6 +1,7 @@
 from elt_core.base_source import BaseDataSource
 
 class MarketingSource(BaseDataSource):
+    source_name = "marketing"
     def transform(self, data):
         """
         Normalize input: lowercase email addresses, rename keys.

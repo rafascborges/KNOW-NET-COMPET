@@ -1,7 +1,8 @@
 from elt_core.base_source import BaseDataSource
-from elt_core.transformations import to_dataframe, to_dict, propagate_company_vat, clean_vat
+from elt_core.transformations import to_dataframe, to_dict, propagate_company_vat, clean_vat, rename_columns
 
 class OrbisSHSource(BaseDataSource):
+    source_name = "orbis_sh"
     GROUP_COLUMN = "Company name Latin alphabet"
     VAT_COLUMN = "VAT/Tax number"
     UCI_COLUMN = "SH - UCI"
@@ -11,6 +12,14 @@ class OrbisSHSource(BaseDataSource):
         Applies VAT propagation and cleaning.
         """
         df = to_dataframe(data)
+
+        df = rename_columns(df, {self.GROUP_COLUMN: "company_name", 
+                                 self.VAT_COLUMN: "VAT", 
+                                 self.UCI_COLUMN: "UCI"})
+        
+        self.GROUP_COLUMN = "company_name"
+        self.VAT_COLUMN = "VAT" 
+        self.UCI_COLUMN = "UCI"
         
         # Propagate VAT
         df = propagate_company_vat(
@@ -29,7 +38,7 @@ class OrbisSHSource(BaseDataSource):
         
         return to_dict(df)
 
-    def run(self, batch_size=5000):
+    def run(self, batch_size=10000):
         """
         Runs the pipeline.
         """

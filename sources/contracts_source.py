@@ -12,7 +12,8 @@ from elt_core.transformations import (
     filter_dropna,
     filter_max_value,
     filter_price_anomalies,
-    filter_date_sequence
+    filter_date_sequence,
+    add_column
 )
 from sources.lookups.countries_set import COUNTRIES_SET
 from sources.lookups.districts_municipalities import DISTRICT_MUNICIPALITIES_DICT, MUNICIPALITY_LOOKUP
@@ -31,6 +32,7 @@ allowed_contract_types = {
 }
 
 class Contracts2Source(BaseDataSource):
+    source_name = "contracts"
     def transform(self, data):
         """
         Transform contracts data.
@@ -86,6 +88,19 @@ class Contracts2Source(BaseDataSource):
             df = map_location_fixes(df, 'execution_location', 'district', DISTRICT_CHANGES_MAP, logger=self.logger)
             df = map_location_fixes(df, 'execution_location', 'municipality', MUNICIPALITY_CHANGES_MAP, logger=self.logger)
 
+        # Step 10: Add number of tenderers by inspecting contestants column
+        df = add_column(df, 'numberOfTenderers', df['contestants'].apply(lambda x: len(x) if isinstance(x, list) else 0))
+
+        # Step 11.1: Ensure initial and final price existis by: 
+        # if initial_price exists and final_price is missing, set final_price = initial_price
+        df.loc[df['initial_price'].notna() & df['final_price'].isna(), 'final_price'] = df['initial_price']
+
+        # Step 11.2: Ensure initial and final price existis by: 
+        # if final_price exists and initial_price is missing, set initial_price = final_price
+        df.loc[df['final_price'].notna() & df['initial_price'].isna(), 'initial_price'] = df['final_price']
+        
+
+
         final_count = len(df)
         self.logger.info(f"Transformation complete. Final row count: {final_count}. Total dropped: {initial_count - final_count}")
 
@@ -96,10 +111,7 @@ class Contracts2Source(BaseDataSource):
         Extracts unique NIFs from specified columns and returns them.
         Expected column structure: list of dicts [{'nif': '...', ...}, ...]
         """
-        # Check if nifs_scrape_queue does exist, if so return
-        if self.db_connector.db_exists("nifs_scrape_queue"):
-            self.logger.info("nifs_scrape_queue already exists. Skipping NIF extraction.")
-            return
+        # TODO: Check if nifs_scrape_queue exists, if so return
 
         self.logger.info(f"Extracting NIFs from columns: {columns}")
         unique_nifs = set()
@@ -150,13 +162,12 @@ class Contracts2Source(BaseDataSource):
         Phase 2: Transform (Bronze -> Memory -> Silver)
         """
         # Phase 1: Ingestion
-        self.logger.info(f"Starting pipeline for {self.__class__.__name__}...")
+        self.logger.info(f"Starting pipeline for {self.source_name}...")
         
-        raw_data = self.extract()
-        
-        self.load_bronze(raw_data, batch_size)
+        for raw_batch in self.extract(batch_size=batch_size):
+            self.load_bronze(raw_batch, batch_size=batch_size)
           
-        self.logger.info(f"Ingestion complete. {len(raw_data)} records loaded to bronze.")
+        self.logger.info(f"Ingestion complete. Records loaded to bronze.")
 
         # Phase 2: Transformation
         
@@ -177,6 +188,6 @@ class Contracts2Source(BaseDataSource):
         
         self.extract_nifs(clean_data)
         
-        self.logger.info(f"{self.__class__.__name__} finished successfully.")
+        self.logger.info(f"{self.source_name} finished successfully.")
 
 

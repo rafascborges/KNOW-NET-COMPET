@@ -17,4 +17,5 @@ dependencies = [
     "ujson>=5.11.0",
     "utils>=1.0.2",
     "pydantic>=2.0.0",
+    "linkml>=1.9.6",
 ]

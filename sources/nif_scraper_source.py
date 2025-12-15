@@ -48,6 +48,7 @@ def _is_valid_nif_format(nif: str) -> bool:
 
 
 class NifScraperSource(BaseDataSource):
+    source_name = "nif_scrape"
     """
     Scrapes NIF data from nif.pt.
 

@@ -1,19 +1,26 @@
 from elt_core.base_source import BaseDataSource
-from elt_core.transformations import to_dataframe, to_dict, propagate_company_vat, clean_vat
+from elt_core.transformations import to_dataframe, to_dict, propagate_company_vat, clean_vat, rename_columns
+import pandas as pd
 
 class OrbisPTCompaniesUCISource(BaseDataSource):
+    source_name = "orbis_pt_companies_uci"
     GROUP_COLUMN = "Company name Latin alphabet"
     VAT_COLUMN = "VAT/Tax number"
+    UCI_COLUMN = "DMUCI (Unique Contact Identifier)"
     
-    # Columns to check for filtering
-    DM_UCI_COLUMN = "DMUCI (Unique Contact Identifier)"
-    SH_UCI_COLUMN = "SH - UCI"
-
     def transform(self, data):
         """
         Applies VAT propagation, cleaning, and filtering based on UCIs from DM and SH sources.
         """
         df = to_dataframe(data)
+
+        df = rename_columns(df, {self.GROUP_COLUMN: "company_name", 
+                                 self.VAT_COLUMN: "VAT", 
+                                 self.UCI_COLUMN: "UCI"})
+        
+        self.GROUP_COLUMN = "company_name"
+        self.VAT_COLUMN = "VAT" 
+        self.UCI_COLUMN = "UCI"
         
         # 1. Propagate VAT
         df = propagate_company_vat(
@@ -36,8 +43,8 @@ class OrbisPTCompaniesUCISource(BaseDataSource):
             dm_docs = self.db_connector.get_all_documents("orbisdm_silver")
             sh_docs = self.db_connector.get_all_documents("orbissh_silver")
             
-            dm_uci_set = {str(d.get(self.DM_UCI_COLUMN)) for d in dm_docs if d.get(self.DM_UCI_COLUMN)}
-            sh_uci_set = {str(d.get(self.SH_UCI_COLUMN)) for d in sh_docs if d.get(self.SH_UCI_COLUMN)}
+            dm_uci_set = {str(d.get(self.UCI_COLUMN)) for d in dm_docs if d.get(self.UCI_COLUMN)}
+            sh_uci_set = {str(d.get(self.UCI_COLUMN)) for d in sh_docs if d.get(self.UCI_COLUMN)}
             
             self.logger.info(f"Loaded {len(dm_uci_set)} DM UCIs and {len(sh_uci_set)} SH UCIs for filtering.")
             
@@ -46,11 +53,11 @@ class OrbisPTCompaniesUCISource(BaseDataSource):
             # Create mask
             mask = pd.Series(False, index=df.index)
             
-            if self.DM_UCI_COLUMN in df.columns and dm_uci_set:
-                mask |= df[self.DM_UCI_COLUMN].astype(str).isin(dm_uci_set)
+            if self.UCI_COLUMN in df.columns and dm_uci_set:
+                mask |= df[self.UCI_COLUMN].astype(str).isin(dm_uci_set)
                 
-            if self.SH_UCI_COLUMN in df.columns and sh_uci_set:
-                mask |= df[self.SH_UCI_COLUMN].astype(str).isin(sh_uci_set)
+            if self.UCI_COLUMN in df.columns and sh_uci_set:
+                mask |= df[self.UCI_COLUMN].astype(str).isin(sh_uci_set)
             
             # Apply filter strictly
             df = df.loc[mask].copy()
@@ -62,7 +69,7 @@ class OrbisPTCompaniesUCISource(BaseDataSource):
 
         return to_dict(df)
 
-    def run(self, batch_size=5000):
+    def run(self, batch_size=20000):
         """
         Runs the pipeline.
         """
