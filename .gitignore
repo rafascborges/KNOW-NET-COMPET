@@ -12,3 +12,7 @@ wheels/
 pipeline.log 
 
 .env 
+
+# Ignore folder data and its contents
+data/
+logs/

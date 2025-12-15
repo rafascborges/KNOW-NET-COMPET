@@ -1,0 +1,78 @@
+id: https://example.org/knownet # change this later to id: https://github.com/myusername/my-project/course-profile
+name: KnownetApplicationProfile
+prefixes:
+  ocds: http://data.tbfy.eu/ontology/ocds
+  linkml: https://w3id.org/linkml/
+  schema: http://schema.org/
+  org: http://www.w3.org/ns/org/ 
+  dcterms: http://purl.org/dc/terms/
+
+default_prefix: ocds
+
+classes:
+  # --- CLASS 1: CONTRACT ---
+  Contract:
+    class_uri: ocds:Contract
+    slots:
+      # --- Data Properties ---
+      - contract_id # ocds:contractId
+      - intial_value # CUSTOM 
+      - final_value # CUSTOM
+      # --- Object Properties ---
+      - hasContractPeriod # ocds:hasContractPeriod
+      - 
+
+
+  # --- CLASS 2: UNIVERSITY (NEW) ---
+  Tender:
+    class_uri: ocds:Tender
+    slots:
+      - tender_id # ocds:tenderId
+      - numberOfTenderers # ocds:numberOfTenderers
+
+      # - awardCriteria # ocds:awardCriteria
+      # - procurementMethod # ocds:procurementMethod
+      # - mainProcurementCategory # ocds:mainProcurementCategory
+
+      - 
+      # --- Object Properties ---
+      - awardsContract # CUSTOM 
+      - hasTenderPeriod # ocds:hasTenderPeriod
+    
+  Organization:
+    class_uri: ocds:Organization
+    slots:
+      - vat # ocds:name
+      - 
+
+  # --- CLASS 3: CONTRACT PERIOD ---
+  ContractPeriod:
+    class_uri: ocds:ContractPeriod
+    slots:
+      - startDate # ocds:startDate
+      - endDate # ocds:endDate
+  
+
+slots:
+  id:
+    identifier: true
+
+  name:
+    slot_uri: dcterms:title
+    required: true
+    range: string
+
+  credits:
+    slot_uri: uni:credits
+    range: integer
+
+  location:
+    slot_uri: schema:location
+    range: string
+
+  # --- THE RELATIONSHIP ---
+  offered_by:
+    slot_uri: schema:provider    # Reusing schema.org's 'provider' property
+    range: University            # <--- THIS IS THE KEY!
+    required: true               # Every course must belong to a uni
+    inlined: false               # "false" means we point to the Uni by URI (reference)
