@@ -5,6 +5,10 @@ from elt_core.db_connector import DBConnector
 from sources.marketing_source import MarketingSource
 from sources.contracts_source import Contracts2Source    
 from sources.anuario_occ_source import AnuarioOCCSource
+from sources.nif_scraper_source import NifScraperSource
+from sources.gold.companies_gold import CompaniesGoldSource
+
+MAX_WORKERS = 10
 
 def main():
     load_dotenv()
@@ -27,7 +31,7 @@ def main():
     sources_config = [
         #(MarketingSource, 'marketing_sample.json', 'id'),
         #(Contracts2Source, 'contracts_2009_2024.parquet', 'contract_id'),
-        (AnuarioOCCSource, 'anuario_occ_table.csv', None), 
+        #(AnuarioOCCSource, 'anuario_occ_table.csv', None), 
     ]
 
     for source_class, filename, id_column in sources_config:
@@ -45,6 +49,25 @@ def main():
         except Exception as e:
             print(f"Pipeline failed for {filename}: {e}")
             traceback.print_exc()
+
+    # Run NIF Scraper
+    print("Running NIF Scraper...")
+    try:
+        scraper = NifScraperSource(db_connector)
+        scraper.run(max_workers=MAX_WORKERS)
+    except Exception as e:
+        print(f"NIF Scraper failed: {e}")
+        traceback.print_exc()
+
+
+    # Run Gold Layer
+    print("Running Gold Layer...")
+    try:
+        companies_gold = CompaniesGoldSource(db_connector)
+        companies_gold.run()
+    except Exception as e:
+        print(f"Gold Layer failed: {e}")
+        traceback.print_exc()
 
 if __name__ == "__main__":
     main()

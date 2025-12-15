@@ -37,23 +37,31 @@ def filter_rows(df: pd.DataFrame, column: str, value: Any, logger: Optional[logg
     _log_step(logger, f"Filter {column} == {value}", initial_count, len(df))
     return df
 
-def rename_columns(df: pd.DataFrame, mapping: Dict[str, str]) -> pd.DataFrame:
+def rename_columns(df: pd.DataFrame, mapping: Dict[str, str], logger: Optional[logging.Logger] = None) -> pd.DataFrame:
     """
     Renames columns based on the provided mapping.
     """
-    return df.rename(columns=mapping)
+    df = df.rename(columns=mapping)
+    if logger:
+        logger.info(f"Renamed columns with mapping: {mapping}")
+    return df
 
-def drop_columns(df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
+def drop_columns(df: pd.DataFrame, columns: List[str], logger: Optional[logging.Logger] = None) -> pd.DataFrame:
     """
     Drops the specified columns from the DataFrame.
     """
-    return df.drop(columns=[c for c in columns if c in df.columns], errors='ignore')
+    df = df.drop(columns=[c for c in columns if c in df.columns], errors='ignore')
+    if logger:
+        logger.info(f"Dropped columns: {columns}")
+    return df
 
-def add_column(df: pd.DataFrame, column_name: str, value: Any) -> pd.DataFrame:
+def add_column(df: pd.DataFrame, column_name: str, value: Any, logger: Optional[logging.Logger] = None) -> pd.DataFrame:
     """
     Adds a new column with a constant value.
     """
     df[column_name] = value
+    if logger:
+        logger.info(f"Added column '{column_name}' with value: {value}")
     return df
 
 def drop_duplicates(df: pd.DataFrame, subset: List[str] = None, logger: Optional[logging.Logger] = None) -> pd.DataFrame:
@@ -286,4 +294,93 @@ def filter_date_sequence(df: pd.DataFrame, start_date_col: str, end_date_col: st
         df = df[df[start_date_col] >= df[end_date_col]]
         
     _log_step(logger, f"Filter Date Sequence {start_date_col} >= {end_date_col}", initial_count, len(df))
+    return df
+def extract_dict_key(df: pd.DataFrame, column: str, key: str, logger: Optional[logging.Logger] = None) -> pd.DataFrame:
+    """
+    Extracts a specific key from a column containing dictionaries.
+    If the value is not a dict or key is missing, returns None.
+    """
+    if column in df.columns:
+        def _extract(val):
+            if isinstance(val, dict):
+                return val.get(key)
+            return None
+        
+        df[column] = df[column].apply(_extract)
+        
+        if logger:
+            logger.info(f"Extracted key '{key}' from column: {column}")
+    return df
+
+def map_values(df: pd.DataFrame, column: str, mapping: Dict[Any, Any], logger: Optional[logging.Logger] = None) -> pd.DataFrame:
+    """
+    Maps values in a column using a lookup dictionary.
+    Values not found in the mapping are left unchanged.
+    """
+    if column in df.columns:
+        df[column] = df[column].map(lambda x: mapping.get(x, x))
+        
+        if logger:
+            logger.info(f"Mapped values in column: {column}")
+    return df
+def propagate_company_vat(
+    df: pd.DataFrame,
+    group_col: str,
+    vat_col: str,
+    logger: Optional[logging.Logger] = None
+) -> pd.DataFrame:
+    """
+    Propagates VAT numbers within groups defined by group_col.
+    Fills missing VATs by forward and backward filling within each group.
+    """
+    initial_count = len(df)
+    if group_col not in df.columns or vat_col not in df.columns:
+        if logger:
+            logger.warning(f"Missing columns for propagation: {group_col}, {vat_col}")
+        return df
+
+    # Ensure VAT column is string for consistent filling
+    # We use a temporary column to avoid modifying the original until we assign back
+    # But here we want to modify the dataframe.
+    
+    # Logic from user:
+    # df[vat_col] = (
+    #     df[vat_col].astype("string")
+    #     .groupby(df[group_col])
+    #     .transform(lambda x: x.ffill().bfill())
+    # )
+    
+    # We need to be careful with types.
+    df[vat_col] = (
+        df[vat_col].astype("string")
+        .groupby(df[group_col])
+        .transform(lambda x: x.ffill().bfill())
+    )
+    
+    if logger:
+        logger.info(f"Propagated VAT in column {vat_col} grouped by {group_col}")
+    return df
+
+def clean_vat(df: pd.DataFrame, vat_col: str, logger: Optional[logging.Logger] = None) -> pd.DataFrame:
+    """
+    Normalizes VAT numbers: strip decimals and enforce 9-digit numeric identifiers.
+    Drops rows where VAT is missing or invalid.
+    """
+    initial_count = len(df)
+    if vat_col not in df.columns:
+        if logger:
+            logger.warning(f"Missing VAT column '{vat_col}'")
+        return df
+
+    # Strip decimals (e.g. "123456789.0" -> "123456789")
+    df[vat_col] = df[vat_col].astype(str).str.split(".").str[0]
+    
+    # Drop NaNs
+    df = df.dropna(subset=[vat_col])
+    
+    # Keep only 9-digit numeric
+    mask = df[vat_col].str.fullmatch(r"\d{9}")
+    df = df.loc[mask].copy()
+    
+    _log_step(logger, f"Clean VAT {vat_col}", initial_count, len(df))
     return df

@@ -7,14 +7,12 @@ services:
     environment:
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
-      # Optional: allow browser tools from your LAN/dev box
       COUCHDB_SECRET: ${COUCHDB_SECRET}
     volumes:
       - couchdb_data:/opt/couchdb/data
-      # Optional: drop a custom local.ini for tweaks (compaction/CORS)
-      # - ./local.ini:/opt/couchdb/etc/local.ini:ro
+
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      test: [ "CMD", "curl", "-f", "http://localhost:5984/_up" ]
       interval: 10s
       timeout: 3s
       retries: 10
@@ -26,4 +24,4 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ${DATA_ROOT}/couchdb-data
+      device: ${DATA_ROOT}/CouchDB/couchdb-data
