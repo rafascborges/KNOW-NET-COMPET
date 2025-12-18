@@ -1,0 +1,398 @@
+id: https://example.org/knownet # change this later to id: https://github.com/myusername/my-project/course-profile
+name: KnownetApplicationProfile
+prefixes:
+  ocds: http://data.tbfy.eu/ontology/ocds#
+  linkml: https://w3id.org/linkml/
+  schema: http://schema.org/
+  org: http://www.w3.org/ns/org# 
+  dcterms: http://purl.org/dc/terms/
+  xsd: http://www.w3.org/2001/XMLSchema# 
+  ext: http://example.org/extensions/
+  data: http://example.org/data/
+  skos: http://www.w3.org/2004/02/skos/core#
+  foaf: http://xmlns.com/foaf/0.1/ 
+
+default_prefix: data
+
+imports:
+  - linkml:types
+
+classes:
+  # --- CLASS 1: CONTRACT ---
+  Contract:
+    class_uri: ocds:Contract
+    
+    # 1. Attributes (Data Properties defined locally)
+    attributes:
+      contract_id:
+        identifier: true
+        slot_uri: ocds:contractId
+        required: true
+        range: string
+
+      signing_date:
+        slot_uri: ocds:dateContractSigned
+        required: true
+        range: datetime
+
+      initial_value:
+        slot_uri: ext:initialContractValue
+        description: The initial value of the contract, available at Portal BASE. Has to be a positive decimal.
+        required: true
+        range: decimal
+
+      final_value:
+        slot_uri: ext:finalContractValue
+        description: The final value of the contract, available at Portal BASE. Has to be a positive decimal.
+        required: true
+        range: decimal
+
+      execution_deadline:
+        slot_uri: ext:durationInDays
+        description: The execution deadline of the contract in days, available at Portal BASE. Has to be a positive integer.
+        required: true
+        range: integer
+
+      contract_type:
+        slot_uri: ext:contractType
+        description: The type of the contract, available at Portal BASE. Has to be one of the values defined in ContractTypeEnum.
+        required: true
+        multivalued: true
+        range: ContractTypeEnum
+
+      causes_deadline_change:
+        slot_uri: ext:causesDeadlineChange
+        description: The causes of the deadline change, available at Portal BASE 
+        range: string
+
+      causes_price_change:
+        slot_uri: ext:causesPriceChange
+        description: The causes of the price change, available at Portal BASE 
+        range: string
+
+    # 2. Slots (Object Properties / Links to other classes)
+    slots:
+      - executedAtLocation
+      - hasClassification
+      - hasDocument
+    
+
+  # --- CLASS 2: TENDER ---
+  Tender:
+    class_uri: ocds:Tender
+    
+    # 1. Attributes (Data Properties defined locally)
+    attributes:
+      tender_id:
+        identifier: true
+        slot_uri: ocds:tenderId
+        required: true
+        range: string
+
+      numberOfTenderers:
+        slot_uri: ocds:numberOfTenderers
+        range: integer
+
+      procurement_method:
+        slot_uri: ocds:procurementMethod
+        required: true
+        range: procurementMethodEnum
+
+      procedure_type:
+        slot_uri: ext:procedureType
+        required: true
+        description: The name of the type of the procedure used in Portugal, available at Portal BASE. Has to be one of the values defined in ProcedureTypeEnum. Each can be assigned to one of the 4 procurement methods defined in ProcurementMethodEnum.
+        range: string
+
+      publication_date:
+        slot_uri: ext:dateTenderPublished
+        description: The date when the tender was published, available at Portal BASE.
+        range: datetime
+
+      close_date:
+        slot_uri: ext:dateTenderClosed
+        description: The date when the tender was closed, available at Portal BASE.
+        range: datetime
+
+      environmental_criteria:
+        slot_uri: ext:environmentalCriteria
+        description: Flags if the tender had any environmental criteria considered in the award of contract, available at Portal BASE.
+        range: boolean
+
+      material_criteria:
+        slot_uri: ext:materialCriteria
+        description: Flags if the tender had any material criteria considered in the award of contract, available at Portal BASE.
+        range: boolean
+
+      centralized_procedure:
+        slot_uri: ext:centralizedProcedure
+        description: Flags if the tender was a centralized procedure, available at Portal BASE.
+        range: boolean
+
+    # 2. Slots (Object Properties / Links to other classes)
+    slots:
+      - awardsContract
+
+  # --- CLASS 3: LOCATION ---
+  Location:
+    class_uri: schema:PostalAddress
+    
+    # 1. Attributes (Data Properties defined locally)
+    attributes:
+      address_id:       # <--- The ID slot is crucial for deduplication
+        identifier: true
+        range: string
+
+      country:
+        slot_uri: schema:addressCountry
+        required: true
+        range: string
+
+      district:
+        slot_uri: schema:addressRegion
+        range: string
+
+      municipality:
+        slot_uri: schema:addressLocality
+        range: string
+
+  # --- CLASS 4: CPV ---
+  CPV:
+    class_uri: skos:Concept
+    
+    # 1. Attributes (Data Properties defined locally)
+    attributes:
+      cpv_id:
+        identifier: true
+        slot_uri: skos:notation
+        required: true
+        range: string
+      
+      label:
+        slot_uri: skos:prefLabel
+        required: true
+        range: string
+      
+      level:
+        slot_uri: ext:level
+        required: true
+        range: string
+   
+    # 2. Slots (Object Properties / Links to other classes)
+    slots:
+      - broader
+
+  # --- CLASS 5: DOCUMENT
+  Document:
+    class_uri: ocds:Document
+    
+    # 1. Attributes (Data Properties defined locally)
+    attributes:
+      document_id:
+        identifier: true
+        slot_uri: ocds:documentId
+        required: true
+        range: string
+
+      document_type:
+        slot_uri: ocds:documentType
+        required: true
+        range: string
+      
+      document_url:
+        slot_uri: schema:url
+        required: true
+        range: string
+  
+  # --- CLASS 6: ORGANIZATION
+  Entity:
+    class_uri: org:Organization
+    
+    # 1. Attributes (Data Properties defined locally)
+    attributes:
+      entity_id:
+        identifier: true
+        slot_uri: org:identifier
+        required: true
+        range: string
+
+      entity_name:
+        slot_uri: org:name
+        range: string
+      
+
+    # 2. Slots (Object Properties / Links to other classes)
+    slots:
+      - hasRole
+      - isProcuringEntityFor
+      - isTendererFor
+      - wonTender
+  
+  # --- CLASS 7: ROLE
+  Role:
+    class_uri: org:Role
+    
+    # 1. Attributes (Data Properties defined locally)
+    attributes:
+      role_id:
+        identifier: true
+        slot_uri: org:identifier
+        required: true
+        range: string
+
+      role_name:
+        slot_uri: org:name
+        range: string
+  
+  # --- CLASS 8: TENURE PERIOD
+
+  TenurePeriod:
+    class_uri: org:Membership
+    attributes:
+      start_date:
+        slot_uri: schema:startDate  
+        range: date
+      end_date:
+        slot_uri: schema:endDate  
+        range: date
+    
+    # 2. Slots (Object Properties / Links to other classes)
+    slots:
+      - inRole
+  
+  # --- CLASS 9: PERSON
+  Person:
+    class_uri: foaf:Agent
+    attributes:
+      person_id:
+        identifier: true
+        slot_uri: foaf:identifier
+        range: string
+
+      person_name:
+        slot_uri: foaf:name
+        range: string
+      
+
+    # 2. Slots (Object Properties / Links to other classes)
+    slots:
+      - isMember
+
+# --- GLOBAL SLOTS (Object Properties Only) ---
+slots:
+  awardsContract:
+    slot_uri: ext:awardsContract    
+    domain: Tender 
+    range: Contract
+    required: true
+    inlined: true
+  
+  executedAtLocation:
+    slot_uri: schema:location  
+    domain: Contract   
+    range: Location
+    required: true
+    inlined: true
+    multivalued: true
+
+  hasClassification:
+    slot_uri: ocds:hasClassification
+    domain: Contract
+    range: CPV
+    required: true
+    inlined: true
+
+  broader:
+    slot_uri: skos:broader
+    domain: CPV
+    range: CPV
+    inlined: true
+  
+  hasDocument:
+    slot_uri: ocds:hasDocument
+    domain: Contract
+    range: Document
+    inlined: true
+    multivalued: true
+
+  hasRole:
+    slot_uri: ext:hasRole
+    domain: Entity
+    range: Role
+    inlined: true
+    multivalued: true
+
+  isProcuringEntityFor:
+    slot_uri: ocds:isProcuringEntityFor
+    domain: Entity
+    range: Tender
+    inlined: true
+    multivalued: true
+
+  isTendererFor:
+    slot_uri: ocds:isTendererFor
+    domain: Entity
+    range: Tender
+    inlined: true
+    multivalued: true
+
+  wonTender:
+    slot_uri: ext:wonTender
+    domain: Entity
+    range: Tender
+    inlined: true
+    multivalued: true
+
+  inRole:
+    slot_uri: org:role
+    domain: TenurePeriod
+    range: Role
+    inlined: true
+
+  isMember:
+    slot_uri: org:member
+    domain: Person 
+    range: TenurePeriod
+    inlined: true
+    multivalued: true
+
+
+
+enums: 
+  ContractTypeEnum:
+    permissible_values:
+      - "Concessão de obras públicas"
+      - "Concessão de serviços públicos"
+      - "Sociedade"
+      - "Aquisição de serviços"
+      - "Aquisição de bens móveis"
+      - "Empreitadas de obras públicas"
+      - "Locação de bens móveis"
+      - "Outros Tipos"
+
+  ProcedureTypeEnum:
+    permissible_values:
+      - "Concurso público simplificado"
+      - "Consulta prévia ao abrigo do artigo 7º da Lei n.º 30/2021, de 21.05"
+      - "Serviços sociais e outros serviços específicos"
+      - "Parceria para a inovação"
+      - "Consulta Prévia"
+      - "Consulta Prévia Simplificada"
+      - "Ajuste Direto Regime Geral ao abrigo do artigo 7º da Lei n.º 30/2021, de 21.05"
+      - "Contratação excluída II"
+      - "Ao abrigo de acordo-quadro (art.º 258.º)"
+      - "Concurso de conceção simplificado"
+      - "Setores especiais – isenção parte II"
+      - "Concurso público"
+      - "Ao abrigo de acordo-quadro (art.º 259.º)"
+      - "Procedimento de negociação"
+      - "Concurso limitado por prévia qualificação"
+      - "Ajuste Direto Regime Geral"
+  
+  procurementMethodEnum:
+    permissible_values:
+      - "open"
+      - "limited"
+      - "selective"
+      - "direct"
+      
