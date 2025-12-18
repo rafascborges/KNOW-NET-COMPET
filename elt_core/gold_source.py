@@ -33,7 +33,7 @@ class BaseGoldSource(ABC):
             # But usually Gold entities should have a stable ID.
             
             self.db_connector.save_documents_bulk(gold_db_name, batch)
-            self.logger.info(f"Saved batch {i}-{i+len(batch)} to {gold_db_name}")
+            self.logger.info(f"Saved batch of {batch_size} documents to {gold_db_name}")
 
     @abstractmethod
     def run(self):

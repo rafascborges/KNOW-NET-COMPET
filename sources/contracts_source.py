@@ -18,6 +18,7 @@ from elt_core.transformations import (
 from sources.lookups.countries_set import COUNTRIES_SET
 from sources.lookups.districts_municipalities import DISTRICT_MUNICIPALITIES_DICT, MUNICIPALITY_LOOKUP
 from sources.lookups.location_changes_maps import COUNTRY_CHANGES_MAP, DISTRICT_CHANGES_MAP, MUNICIPALITY_CHANGES_MAP
+from sources.lookups.procurement_type_method_map import PROCUREMENT_TYPE_METHOD_MAP
 
 
 
@@ -31,7 +32,7 @@ allowed_contract_types = {
     "Sociedade",
 }
 
-class Contracts2Source(BaseDataSource):
+class ContractsSource(BaseDataSource):
     source_name = "contracts"
     def transform(self, data):
         """
@@ -90,6 +91,7 @@ class Contracts2Source(BaseDataSource):
 
         # Step 10: Add number of tenderers by inspecting contestants column
         df = add_column(df, 'numberOfTenderers', df['contestants'].apply(lambda x: len(x) if isinstance(x, list) else 0))
+        self.logger.info(f"Added number of tenderers column based on contestants")
 
         # Step 11.1: Ensure initial and final price existis by: 
         # if initial_price exists and final_price is missing, set final_price = initial_price
@@ -98,6 +100,10 @@ class Contracts2Source(BaseDataSource):
         # Step 11.2: Ensure initial and final price existis by: 
         # if final_price exists and initial_price is missing, set initial_price = final_price
         df.loc[df['final_price'].notna() & df['initial_price'].isna(), 'initial_price'] = df['final_price']
+
+        # Step 12: Add procurement method
+        df = add_column(df, 'procurement_method', df['procedure_type'].map(PROCUREMENT_TYPE_METHOD_MAP))
+        self.logger.info(f"Added procurement method column based on OCDS")
         
 
 
@@ -114,7 +120,7 @@ class Contracts2Source(BaseDataSource):
         # TODO: Check if nifs_scrape_queue exists, if so return
 
         self.logger.info(f"Extracting NIFs from columns: {columns}")
-        unique_nifs = set()
+        nifs_data = {}
         
         # Ensure data is a list of dicts
         if isinstance(data, dict):
@@ -124,36 +130,46 @@ class Contracts2Source(BaseDataSource):
             for col in columns:
                 if col in row and row[col]:
                     val = row[col]
+                    # Normalize to list for uniform processing
+                    items = val if isinstance(val, list) else [val]
                     
-                    if isinstance(val, list):
-                        for item in val:
-                            if isinstance(item, dict) and 'nif' in item:
-                                nif = item['nif']
-                                if nif:
-                                    unique_nifs.add(str(nif))
-                    elif isinstance(val, dict) and 'nif' in val:
-                         nif = val['nif']
-                         if nif:
-                             unique_nifs.add(str(nif))
+                    for item in items:
+                        if isinstance(item, dict) and 'nif' in item:
+                            nif = str(item['nif']).strip()
+                            if not nif:
+                                continue
 
-        self.logger.info(f"Found {len(unique_nifs)} unique NIFs.")
+                            # Determine description
+                            raw_desc = item.get('description')
+                            if not raw_desc or str(raw_desc).strip() in ['-', '']:
+                                description = 'No description'
+                            else:
+                                description = str(raw_desc).strip()
+
+                            # Logic: Store if new, or update if we have a better description than existing placeholder
+                            if nif not in nifs_data:
+                                nifs_data[nif] = description
+                            elif nifs_data[nif] == 'No description' and description != 'No description':
+                                nifs_data[nif] = description
+
+        self.logger.info(f"Found {len(nifs_data)} unique NIFs.")
         
-        if not unique_nifs:
+        if not nifs_data:
             return
 
         # Prepare documents for queue
         docs = []
-        for nif in unique_nifs:
-            if nif.strip():
-                docs.append({
-                    "_id": nif,
-                    "nif": nif,
-                    "status": "pending",
-                    "source": "contracts"
-                })
+        for nif, description in nifs_data.items():
+            docs.append({
+                "_id": nif,
+                "nif": nif,
+                "description": description,
+                "status": "pending",
+                "source": "contracts"
+            })
         
         self._save_in_batches(docs, "nifs_scrape_queue", batch_size=5000)
-        print(f"Saved {len(docs)} NIFs to queue.")
+        self.logger.info(f"Saved {len(docs)} NIFs to queue.")
 
     def run(self, batch_size=5000):
         """

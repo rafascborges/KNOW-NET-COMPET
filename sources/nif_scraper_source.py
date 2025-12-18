@@ -30,6 +30,7 @@ class ScrapeResult(TypedDict):
     valid_nif: Optional[bool]
     postal_code: Optional[str]
     district: Optional[str]
+    description: Optional[str]
 
 
 def get_district_from_postal(postal_code: Optional[str]) -> Optional[str]:
@@ -117,7 +118,7 @@ class NifScraperSource(BaseDataSource):
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             # Submit all tasks
             future_to_nif = {
-                executor.submit(self.scrape, doc.get('nif')): doc.get('nif') 
+                executor.submit(self.scrape, doc.get('nif'), doc.get('description')): doc.get('nif') 
                 for doc in docs_to_scrape 
                 if doc.get('nif')
             }
@@ -149,12 +150,13 @@ class NifScraperSource(BaseDataSource):
 
         self.logger.info("NIF Scraper finished.")
 
-    def scrape(self, nif: str) -> ScrapeResult:
+    def scrape(self, nif: str, description: Optional[str] = None) -> ScrapeResult:
         """
         Scrapes NIF data from nif.pt.
         
         Args:
             nif (str): The NIF to scrape.
+            description (str, optional): The entity description/name.
             
         Returns:
             ScrapeResult: The scraped data, or a result with None values if failed.
@@ -164,15 +166,15 @@ class NifScraperSource(BaseDataSource):
         # 1. Validate Format
         if not _is_valid_nif_format(nif_str):
             self.logger.warning(f"[SKIP] NIF format invalid: {nif_str}")
-            return self._create_outcome(nif_str, valid_nif=False)
+            return self._create_outcome(nif_str, valid_nif=False, description=description)
 
         # 2. Fetch HTML
         html_content = self._fetch_html(nif_str)
         if not html_content:
-            return self._create_outcome(nif_str, valid_nif=None)
+            return self._create_outcome(nif_str, valid_nif=None, description=description)
 
         # 3. Parse HTML
-        return self._parse_html(nif_str, html_content)
+        return self._parse_html(nif_str, html_content, description)
 
     def _fetch_html(self, nif_str: str) -> Optional[str]:
         """Fetches the HTML content for a given NIF."""
@@ -187,7 +189,7 @@ class NifScraperSource(BaseDataSource):
             self.logger.error(f"[ERROR] Failed to scrape NIF: {nif_str}. Error: {e}")
             return None
 
-    def _parse_html(self, nif_str: str, html_content: str) -> ScrapeResult:
+    def _parse_html(self, nif_str: str, html_content: str, description: Optional[str] = None) -> ScrapeResult:
         """Parses the HTML content to extract NIF validity and postal code."""
         soup = BeautifulSoup(html_content, "html.parser")
         postal_code: Optional[str] = None
@@ -220,14 +222,15 @@ class NifScraperSource(BaseDataSource):
 
         district = get_district_from_postal(postal_code) if postal_code else None
         
-        return self._create_outcome(nif_str, valid_nif, postal_code, district)
+        return self._create_outcome(nif_str, valid_nif, postal_code, district, description)
 
     def _create_outcome(
         self, 
         nif: str, 
         valid_nif: Optional[bool] = None, 
         postal_code: Optional[str] = None, 
-        district: Optional[str] = None
+        district: Optional[str] = None,
+        description: Optional[str] = None
     ) -> ScrapeResult:
         """Helper to create a consistent ScrapeResult dictionary."""
         return {
@@ -236,6 +239,7 @@ class NifScraperSource(BaseDataSource):
             "valid_nif": valid_nif,
             "postal_code": postal_code,
             "district": district,
+            "description": description,
         }
 
     def transform(self, data):
