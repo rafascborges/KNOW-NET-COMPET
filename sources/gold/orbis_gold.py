@@ -1,18 +1,10 @@
 from typing import Dict, List, Any, Set
-from elt_core.gold_source import BaseGoldSource
+from elt_core.base_source import BaseDataSource
 
-class OrbisGoldSource(BaseGoldSource):
-    def run(self):
-        self.logger.info("Running Orbis Gold Source...")
-
-        # 1. Fetch Silver Data
-        dm_silver = self.get_data("orbis_dm_silver")
-        self.logger.info(f"Loaded {len(dm_silver)} records from orbis_dm_silver.")
-
-        sh_silver = self.get_data("orbis_sh_silver")
-        self.logger.info(f"Loaded {len(sh_silver)} records from orbis_sh_silver.")
-
-        # 2. Aggregation Structures
+class OrbisGoldSource(BaseDataSource):
+    source_name = "orbis_gold"
+    def transform(self, dm_silver: List[Dict[str, Any]], sh_silver: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        # 1. Aggregation Structures
         # We need to track VATs and Names per UCI for both sources
         all_ucis: Set[str] = set()
         
@@ -49,7 +41,7 @@ class OrbisGoldSource(BaseGoldSource):
         # Process SH
         process_source(sh_silver, sh_data, 'SH - Name')
 
-        # 3. Construct Gold Documents
+        # 2. Construct Gold Documents
         gold_docs = []
         for uci in all_ucis:
             dm_entry = dm_data.get(uci)
@@ -76,9 +68,23 @@ class OrbisGoldSource(BaseGoldSource):
             gold_docs.append(doc)
 
         self.logger.info(f"Aggregated into {len(gold_docs)} UCI groups.")
+        return gold_docs
 
-        # 4. Save to Gold Database
+    def run(self):
+        self.logger.info("Running Orbis Gold Source...")
+
+        # 1. Fetch Silver Data
+        dm_silver = self.db_connector.get_all_documents("orbis_dm_silver")
+        self.logger.info(f"Loaded {len(dm_silver)} records from orbis_dm_silver.")
+
+        sh_silver = self.db_connector.get_all_documents("orbis_sh_silver")
+        self.logger.info(f"Loaded {len(sh_silver)} records from orbis_sh_silver.")
+
+        # 2. Transform
+        gold_docs = self.transform(dm_silver, sh_silver)
+
+        # 3. Save to Gold Database
         if gold_docs:
-            self.save_gold(gold_docs, "orbis_gold")
+            self._save_in_batches(gold_docs, self.source_name, batch_size=5000)
         else:
             self.logger.warning("No valid gold records generated for Orbis Gold.")

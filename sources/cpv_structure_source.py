@@ -9,6 +9,9 @@ LEVEL_NAMES = {
 }
 
 class CPVStructureSource(BaseDataSource):
+
+    source_name = "cpv_structure"
+    
     def transform(self, data):
         """
         Normalize input: lowercase email addresses, rename keys.

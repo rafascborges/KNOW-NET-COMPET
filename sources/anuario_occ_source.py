@@ -76,7 +76,7 @@ class AnuarioOCCSource(BaseDataSource):
                 "_id": str(nif), # Use NIF as ID
                 "nif": str(nif),
                 "name": base_name,
-                "owners": normalised_owners,
+                "municipalities_participation": normalised_owners,
                 "original_occ_name": occ_name
             }
             transformed_docs.append(doc)

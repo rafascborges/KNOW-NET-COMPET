@@ -1,5 +1,6 @@
 from elt_core.base_source import BaseDataSource
 from elt_core.transformations import to_dataframe, to_dict, propagate_company_vat, clean_vat, rename_columns
+import pandas as pd
 
 class OrbisDMSource(BaseDataSource):
     source_name = "orbis_dm"
@@ -13,9 +14,11 @@ class OrbisDMSource(BaseDataSource):
         """
         df = to_dataframe(data)
 
+
         df = rename_columns(df, {self.GROUP_COLUMN: "company_name", 
                                  self.VAT_COLUMN: "VAT", 
                                  self.UCI_COLUMN: "UCI"})
+        self.logger.info(f"Renamed columns for {len(df)} records.")
         
         self.GROUP_COLUMN = "company_name"
         self.VAT_COLUMN = "VAT" 
@@ -28,6 +31,7 @@ class OrbisDMSource(BaseDataSource):
             vat_col=self.VAT_COLUMN, 
             logger=self.logger
         )
+        self.logger.info(f"Propagated VAT for {len(df)} records.")
         
         # Clean VAT
         df = clean_vat(
@@ -35,6 +39,12 @@ class OrbisDMSource(BaseDataSource):
             vat_col=self.VAT_COLUMN, 
             logger=self.logger
         )
+        self.logger.info(f"Cleaned VAT for {len(df)} records.")
+
+        # Fix datetime columns using excel dates
+        df['DMAppointment date'] = pd.to_datetime(df['DMAppointment date'], unit='D', origin='1899-12-30').dt.strftime('%Y-%m-%d')
+        df['DMResignation date'] = pd.to_datetime(df['DMResignation date'], unit='D', origin='1899-12-30').dt.strftime('%Y-%m-%d')
+        self.logger.info(f"Fixed datetime columns for {len(df)} records.")
         
         return to_dict(df)
 
