@@ -9,8 +9,8 @@ import pandas as pd
 import pyarrow.dataset as ds
 
 class BaseDataSource(ABC):
-    def __init__(self, file_path, db_connector, id_column=None):
-        self.file_path = Path(file_path)
+    def __init__(self, db_connector, file_path=None, id_column=None):
+        self.file_path = Path(file_path) if file_path else None
         self.db_connector = db_connector
         self.id_column = id_column
         self.logger = self._setup_logger()
