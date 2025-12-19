@@ -74,7 +74,7 @@ classes:
     slots:
       - executedAtLocation
       - hasClassification
-      - hasDocument
+      - hasDocuments
     
 
   # --- CLASS 2: TENDER ---
@@ -285,7 +285,7 @@ slots:
     domain: Tender 
     range: Contract
     required: true
-    inlined: true
+    inlined: false
   
   executedAtLocation:
     slot_uri: schema:location  
@@ -300,7 +300,7 @@ slots:
     domain: Contract
     range: CPV
     required: true
-    inlined: true
+    inlined: false
 
   broader:
     slot_uri: skos:broader
@@ -308,7 +308,7 @@ slots:
     range: CPV
     inlined: true
   
-  hasDocument:
+  hasDocuments:
     slot_uri: ocds:hasDocument
     domain: Contract
     range: Document

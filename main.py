@@ -2,43 +2,51 @@ import traceback
 from pathlib import Path
 from dotenv import load_dotenv
 from elt_core.db_connector import DBConnector
-from sources.marketing_source import MarketingSource
-from sources.contracts_source import Contracts2Source    
+from sources.contracts_source import ContractsSource
 from sources.anuario_occ_source import AnuarioOCCSource
 from sources.nif_scraper_source import NifScraperSource
 from sources.orbis_dm import OrbisDMSource
 from sources.orbis_sh import OrbisSHSource
 from sources.orbis_pt_companies_uci import OrbisPTCompaniesUCISource
+from sources.gold.orbis_gold import OrbisGoldSource
+from sources.gold.entities_gold import EntitiesGoldSource
+from sources.gold.contracts_gold import ContractsGoldSource
+from sources.cpv_structure_source import CPVStructureSource
+from sources.graph_mappers.contracts_tender_map import contracts_tender_map
+
 
 MAX_WORKERS = 10
+RUN_SCRAPER = False
 
-def main():
-    load_dotenv()
-    print("Initializing ELT Pipeline...")
+# Configuration of sources: (SourceClass, id_column, filename)
+SOURCES_CONFIG = [
+    # (ContractsSource, 'contracts_2009_2024.parquet', 'contract_id'),
+    (AnuarioOCCSource, 'anuario_occ_table.csv', None),
+    # (CPVStructureSource, 'cpv.json', None),
+    # (OrbisDMSource, 'orbis_dm.csv', None),
+    # (OrbisSHSource, 'orbis_sh.csv', None),
+    # (OrbisPTCompaniesUCISource, 'orbis_pt_companies_uci.csv', None)
+]
 
-    # Initialize DB Connector
+GOLD_SOURCES_CONFIG = [
+    #ContractsGoldSource,
+    #OrbisGoldSource,
+    #EntitiesGoldSource,
+]
+
+def initialize_db_connector():
+    """Initializes the database connector."""
     # Ensure you have CouchDB running. 
     # If using the provided docker-compose, it should be at localhost:5984
     try:
-        db_connector = DBConnector()
+        return DBConnector()
     except Exception as e:
         print(f"Failed to connect to DB: {e}")
         traceback.print_exc()
-        return
+        return None
 
-    base_dir = Path(__file__).resolve().parent
-    data_dir = base_dir / 'data'
-
-    # Configuration of sources: (SourceClass, id_column, filename)
-    sources_config = [
-        #(MarketingSource, 'marketing_sample.json', 'id'),
-        (Contracts2Source, 'contracts_2009_2024.parquet', 'contract_id'),
-        #(AnuarioOCCSource, 'anuario_occ_table.csv', None),
-        #(OrbisDMSource, 'orbis_dm.csv', None),
-        #(OrbisSHSource, 'orbis_sh.csv', None),
-        #(OrbisPTCompaniesUCISource, 'orbis_pt_companies_uci.csv', None)
-    ]
-
+def process_sources(db_connector, data_dir, sources_config):
+    """Runs the standard data sources."""
     for source_class, filename, id_column in sources_config:
         file_path = data_dir / filename
 
@@ -49,30 +57,81 @@ def main():
         # Instantiate Source
         print(f"Processing file: {file_path}")
         try:
-            source_instance = source_class(file_path, db_connector, id_column)
+            source_instance = source_class(db_connector=db_connector, file_path=file_path, id_column=id_column)
             source_instance.run()
         except Exception as e:
             print(f"Pipeline failed for {filename}: {e}")
             traceback.print_exc()
 
-    # # Run NIF Scraper
-    # print("Running NIF Scraper...")
-    # try:
-    #     scraper = NifScraperSource(db_connector)
-    #     scraper.run(max_workers=MAX_WORKERS)
-    # except Exception as e:
-    #     print(f"NIF Scraper failed: {e}")
-    #     traceback.print_exc()
+def run_nif_scraper(db_connector):
+    """Runs the NIF Scraper."""
+    print("Running NIF Scraper...")
+    try:
+        scraper = NifScraperSource(db_connector)
+        scraper.run(max_workers=MAX_WORKERS)
+    except Exception as e:
+        print(f"NIF Scraper failed: {e}")
+        traceback.print_exc()
 
+def run_gold_layer(db_connector, gold_sources_config):
+    """Runs the Gold Layer sources."""
+    print("Running Gold Layer...")
+    try:
+        for gold_source_class in gold_sources_config:
+            gold_source_instance = gold_source_class(db_connector=db_connector)
+            gold_source_instance.run()
+    except Exception as e:
+        print(f"Gold Layer failed: {e}")
+        traceback.print_exc()
 
-    # # Run Gold Layer
-    # print("Running Gold Layer...")
-    # try:
-    #     companies_gold = CompaniesGoldSource(db_connector)
-    #     companies_gold.run()
-    # except Exception as e:
-    #     print(f"Gold Layer failed: {e}")
-    #     traceback.print_exc()
+def run_graph_loader(db_connector):
+    # --- PLATINUM STEP: Graph Sync ---
+    print("Starting Graph Loader...")
+
+    # 2. Initialize the GraphLoader with the connector
+    loader = GraphLoader(
+        db_connector=db_connector,     # <--- Passing your instance here
+        neo4j_uri="neo4j://localhost:7687",
+        schema_path="schema.yaml",
+        model_module=model
+    )
+
+    # 3. Register Collections
+    loader.register_collections({
+        'Tender': 'tenders',
+        'Contract': 'contracts',
+        # 'Location': 'locations',
+        # 'Entity': 'entities'
+    })
+
+    # 4. Run Sync
+    # This calls my_connector.get_all_documents('gold_contracts') internally
+    loader.sync_gold_db(
+        couch_db_name="gold_contracts", 
+        doc_mapper_func=contracts_tender_map
+    )
+
+def main():
+    load_dotenv()
+    print("Initializing ELT Pipeline...")
+
+    db_connector = initialize_db_connector()
+    if not db_connector:
+        return
+
+    base_dir = Path(__file__).resolve().parent
+    data_dir = base_dir / 'data'
+
+    if SOURCES_CONFIG:
+        process_sources(db_connector, data_dir, SOURCES_CONFIG)
+    
+    if RUN_SCRAPER:
+        run_nif_scraper(db_connector)
+        
+    if GOLD_SOURCES_CONFIG:
+        run_gold_layer(db_connector, GOLD_SOURCES_CONFIG)
+
+    run_graph_loader(db_connector)
 
 if __name__ == "__main__":
     main()
