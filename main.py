@@ -12,7 +12,9 @@ from sources.gold.orbis_gold import OrbisGoldSource
 from sources.gold.entities_gold import EntitiesGoldSource
 from sources.gold.contracts_gold import ContractsGoldSource
 from sources.cpv_structure_source import CPVStructureSource
-from sources.graph_mappers.contracts_tender_map import contracts_tender_map
+from sources.graph_mappers.contract_mapper import contract_mapper
+from elt_core.graph_loader import GraphLoader
+import model 
 
 
 MAX_WORKERS = 10
@@ -21,7 +23,7 @@ RUN_SCRAPER = False
 # Configuration of sources: (SourceClass, id_column, filename)
 SOURCES_CONFIG = [
     # (ContractsSource, 'contracts_2009_2024.parquet', 'contract_id'),
-    (AnuarioOCCSource, 'anuario_occ_table.csv', None),
+    #(AnuarioOCCSource, 'anuario_occ_table.csv', None),
     # (CPVStructureSource, 'cpv.json', None),
     # (OrbisDMSource, 'orbis_dm.csv', None),
     # (OrbisSHSource, 'orbis_sh.csv', None),
@@ -85,31 +87,45 @@ def run_gold_layer(db_connector, gold_sources_config):
         traceback.print_exc()
 
 def run_graph_loader(db_connector):
-    # --- PLATINUM STEP: Graph Sync ---
+    """Initialize and run the graph loader with Neo4j driver."""
+    import os
+    
     print("Starting Graph Loader...")
-
-    # 2. Initialize the GraphLoader with the connector
+    
+    # Neo4j connection details from environment variables
+    NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
+    NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
+    NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
+    
+    # Initialize the GraphLoader with Neo4j driver
     loader = GraphLoader(
-        db_connector=db_connector,     # <--- Passing your instance here
-        neo4j_uri="neo4j://localhost:7687",
-        schema_path="schema.yaml",
+        db_connector=db_connector,
+        neo4j_uri=NEO4J_URI,
+        neo4j_auth=(NEO4J_USER, NEO4J_PASSWORD),
         model_module=model
     )
+    
+    try:
+        # Run sync - no need to register collections anymore
+        loader.sync_gold_db(
+            couch_db_name="contracts_gold",
+            doc_mapper_func=contract_mapper
+        )
+        
+        print("Graph sync completed successfully!")
+        
+        # Log validation errors if any
+        if loader.validation_errors:
+            print(f"\n⚠️  {len(loader.validation_errors)} validation errors occurred.")
+            print("Review with: loader.validation_errors")
+            
+    except Exception as e:
+        print(f"Graph loader failed: {e}")
+        traceback.print_exc()
+    finally:
+        # Close the Neo4j connection
+        loader.close()
 
-    # 3. Register Collections
-    loader.register_collections({
-        'Tender': 'tenders',
-        'Contract': 'contracts',
-        # 'Location': 'locations',
-        # 'Entity': 'entities'
-    })
-
-    # 4. Run Sync
-    # This calls my_connector.get_all_documents('gold_contracts') internally
-    loader.sync_gold_db(
-        couch_db_name="gold_contracts", 
-        doc_mapper_func=contracts_tender_map
-    )
 
 def main():
     load_dotenv()

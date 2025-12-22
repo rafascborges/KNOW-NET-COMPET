@@ -1,0 +1,69 @@
+@startuml
+skinparam nodesep 10
+hide circle
+hide empty members
+class "TenurePeriod" [[{None}]] {
+    {field} start_date : date  
+    {field} end_date : date  
+}
+class "Role" [[{None}]] {
+    {field} role_id : string  
+    {field} role_name : string  
+}
+class "Person" [[{None}]] {
+    {field} person_id : string  
+    {field} person_name : string  
+}
+"TenurePeriod" *--> "0..1" "Role" : "inRole"
+"Person" *--> "0..*" "TenurePeriod" : "isMember"
+class "Tender" [[{None}]] {
+    {field} tender_id : string  
+    {field} numberOfTenderers : integer  
+    {field} procurement_method : procurementMethodEnum  
+    {field} procedure_type : string  
+    {field} publication_date : datetime  
+    {field} close_date : datetime  
+    {field} environmental_criteria : boolean  
+    {field} material_criteria : boolean  
+    {field} centralized_procedure : boolean  
+}
+class "Contract" [[{None}]] {
+    {field} contract_id : string  
+    {field} signing_date : datetime  
+    {field} initial_value : decimal  
+    {field} final_value : decimal  
+    {field} execution_deadline : integer  
+    {field} contract_type : ContractTypeEnum  [1..*]
+    {field} causes_deadline_change : string  
+    {field} causes_price_change : string  
+}
+class "Entity" [[{None}]] {
+    {field} entity_id : string  
+    {field} entity_name : string  
+}
+"Tender" --> "1" "Contract" : "awardsContract"
+"Entity" *--> "0..*" "Tender" : "isProcuringEntityFor"
+"Entity" *--> "0..*" "Tender" : "isTendererFor"
+"Entity" *--> "0..*" "Tender" : "wonTender"
+"Entity" *--> "0..*" "Role" : "hasRole"
+class "Location" [[{None}]] {
+    {field} address_id : string  
+    {field} country : string  
+    {field} district : string  
+    {field} municipality : string  
+}
+"Contract" *--> "1..*" "Location" : "executedAtLocation"
+class "Document" [[{None}]] {
+    {field} document_id : string  
+    {field} document_type : string  
+    {field} document_url : string  
+}
+"Contract" *--> "0..*" "Document" : "hasDocuments"
+class "CPV" [[{None}]] {
+    {field} cpv_id : string  
+    {field} label : string  
+    {field} level : string  
+}
+"Contract" --> "1" "CPV" : "hasClassification"
+"CPV" *--> "0..1" "CPV" : "broader"
+@enduml

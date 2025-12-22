@@ -19,4 +19,6 @@ dependencies = [
     "pydantic>=2.0.0",
     "linkml>=1.9.6",
     "python-slugify>=8.0.4",
+    "linkml-store>=0.2.12",
+    "neo4j>=6.0.3",
 ]

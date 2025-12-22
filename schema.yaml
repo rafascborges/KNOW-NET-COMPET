@@ -24,7 +24,7 @@ classes:
     
     # 1. Attributes (Data Properties defined locally)
     attributes:
-      contract_id:
+      id:
         identifier: true
         slot_uri: ocds:contractId
         required: true
@@ -37,15 +37,15 @@ classes:
 
       initial_value:
         slot_uri: ext:initialContractValue
-        description: The initial value of the contract, available at Portal BASE. Has to be a positive decimal.
+        description: The initial value of the contract, available at Portal BASE. Has to be a positive float.
         required: true
-        range: decimal
+        range: float
 
       final_value:
         slot_uri: ext:finalContractValue
-        description: The final value of the contract, available at Portal BASE. Has to be a positive decimal.
+        description: The final value of the contract, available at Portal BASE. Has to be a positive float.
         required: true
-        range: decimal
+        range: float
 
       execution_deadline:
         slot_uri: ext:durationInDays
@@ -83,7 +83,7 @@ classes:
     
     # 1. Attributes (Data Properties defined locally)
     attributes:
-      tender_id:
+      id:
         identifier: true
         slot_uri: ocds:tenderId
         required: true
@@ -139,7 +139,7 @@ classes:
     
     # 1. Attributes (Data Properties defined locally)
     attributes:
-      address_id:       # <--- The ID slot is crucial for deduplication
+      id:       # <--- The ID slot is crucial for deduplication
         identifier: true
         range: string
 
@@ -162,7 +162,7 @@ classes:
     
     # 1. Attributes (Data Properties defined locally)
     attributes:
-      cpv_id:
+      id:
         identifier: true
         slot_uri: skos:notation
         required: true
@@ -188,20 +188,19 @@ classes:
     
     # 1. Attributes (Data Properties defined locally)
     attributes:
-      document_id:
+      id:
         identifier: true
         slot_uri: ocds:documentId
-        required: true
-        range: string
-
-      document_type:
-        slot_uri: ocds:documentType
         required: true
         range: string
       
       document_url:
         slot_uri: schema:url
         required: true
+        range: string
+      
+      document_description:
+        slot_uri: schema:description
         range: string
   
   # --- CLASS 6: ORGANIZATION
@@ -210,7 +209,7 @@ classes:
     
     # 1. Attributes (Data Properties defined locally)
     attributes:
-      entity_id:
+      id:
         identifier: true
         slot_uri: org:identifier
         required: true
@@ -227,6 +226,7 @@ classes:
       - isProcuringEntityFor
       - isTendererFor
       - wonTender
+      - signedContract
   
   # --- CLASS 7: ROLE
   Role:
@@ -234,7 +234,7 @@ classes:
     
     # 1. Attributes (Data Properties defined locally)
     attributes:
-      role_id:
+      id:
         identifier: true
         slot_uri: org:identifier
         required: true
@@ -285,7 +285,6 @@ slots:
     domain: Tender 
     range: Contract
     required: true
-    inlined: false
   
   executedAtLocation:
     slot_uri: schema:location  
@@ -299,8 +298,8 @@ slots:
     slot_uri: ocds:hasClassification
     domain: Contract
     range: CPV
-    required: true
-    inlined: false
+    required: false
+    multivalued: true
 
   broader:
     slot_uri: skos:broader
@@ -326,21 +325,24 @@ slots:
     slot_uri: ocds:isProcuringEntityFor
     domain: Entity
     range: Tender
-    inlined: true
     multivalued: true
 
   isTendererFor:
     slot_uri: ocds:isTendererFor
     domain: Entity
     range: Tender
-    inlined: true
     multivalued: true
 
   wonTender:
     slot_uri: ext:wonTender
     domain: Entity
     range: Tender
-    inlined: true
+    multivalued: true
+  
+  signedContract:
+    slot_uri: ocds:isSignatoryForContract
+    domain: Entity
+    range: Contract
     multivalued: true
 
   inRole:
