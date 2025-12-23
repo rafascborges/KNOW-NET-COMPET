@@ -15,4 +15,3 @@ pipeline.log
 
 # Ignore folder data and its contents
 data/
-logs/

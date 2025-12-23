@@ -72,9 +72,9 @@ classes:
 
     # 2. Slots (Object Properties / Links to other classes)
     slots:
-      - executedAtLocation
-      - hasClassification
-      - hasDocuments
+      - EXECUTED_AT_LOCATION
+      - HAS_CPV_CLASSIFICATION
+      - HAS_DOCUMENT
     
 
   # --- CLASS 2: TENDER ---
@@ -131,7 +131,7 @@ classes:
 
     # 2. Slots (Object Properties / Links to other classes)
     slots:
-      - awardsContract
+      - AWARDS_CONTRACT
 
   # --- CLASS 3: LOCATION ---
   Location:
@@ -180,7 +180,7 @@ classes:
    
     # 2. Slots (Object Properties / Links to other classes)
     slots:
-      - broader
+      - BROADER
 
   # --- CLASS 5: DOCUMENT
   Document:
@@ -218,15 +218,20 @@ classes:
       entity_name:
         slot_uri: org:name
         range: string
+
+      valid_nif:
+        slot_uri: ext:hasValidNif
+        range: boolean
       
 
     # 2. Slots (Object Properties / Links to other classes)
     slots:
-      - hasRole
-      - isProcuringEntityFor
-      - isTendererFor
-      - wonTender
-      - signedContract
+      - HAS_ROLE
+      - IS_PROCURING_ENTITY_FOR
+      - IS_TENDERER_FOR
+      - WON_TENDER
+      - SIGNED_CONTRACT
+      - LOCATED_AT
   
   # --- CLASS 7: ROLE
   Role:
@@ -252,19 +257,20 @@ classes:
       start_date:
         slot_uri: schema:startDate  
         range: date
+
       end_date:
         slot_uri: schema:endDate  
         range: date
     
     # 2. Slots (Object Properties / Links to other classes)
     slots:
-      - inRole
+      - IN_ROLE
   
   # --- CLASS 9: PERSON
   Person:
     class_uri: foaf:Agent
     attributes:
-      person_id:
+      id:
         identifier: true
         slot_uri: foaf:identifier
         range: string
@@ -276,86 +282,105 @@ classes:
 
     # 2. Slots (Object Properties / Links to other classes)
     slots:
-      - isMember
+      - DURING_PERIOD
+      - DIRECTOR_OR_MANAGER_FOR
+      - SHAREHOLDER_FOR
 
 # --- GLOBAL SLOTS (Object Properties Only) ---
 slots:
-  awardsContract:
-    slot_uri: ext:awardsContract    
+  AWARDS_CONTRACT:
+    slot_uri: ext:AWARDS_CONTRACT    
     domain: Tender 
     range: Contract
     required: true
   
-  executedAtLocation:
+  EXECUTED_AT_LOCATION:
     slot_uri: schema:location  
     domain: Contract   
     range: Location
-    required: true
     inlined: true
     multivalued: true
 
-  hasClassification:
-    slot_uri: ocds:hasClassification
+  HAS_CPV_CLASSIFICATION:
+    slot_uri: ocds:HAS_CPV_CLASSIFICATION
     domain: Contract
     range: CPV
     required: false
     multivalued: true
 
-  broader:
-    slot_uri: skos:broader
+  BROADER:
+    slot_uri: skos:BROADER
     domain: CPV
     range: CPV
     inlined: true
   
-  hasDocuments:
+  HAS_DOCUMENT:
     slot_uri: ocds:hasDocument
     domain: Contract
     range: Document
     inlined: true
     multivalued: true
 
-  hasRole:
-    slot_uri: ext:hasRole
+  HAS_ROLE:
+    slot_uri: ext:HAS_ROLE
     domain: Entity
     range: Role
     inlined: true
     multivalued: true
 
-  isProcuringEntityFor:
-    slot_uri: ocds:isProcuringEntityFor
+  IS_PROCURING_ENTITY_FOR:
+    slot_uri: ocds:IS_PROCURING_ENTITY_FOR
     domain: Entity
     range: Tender
     multivalued: true
 
-  isTendererFor:
-    slot_uri: ocds:isTendererFor
+  IS_TENDERER_FOR:
+    slot_uri: ocds:IS_TENDERER_FOR
     domain: Entity
     range: Tender
     multivalued: true
 
-  wonTender:
-    slot_uri: ext:wonTender
+  WON_TENDER:
+    slot_uri: ext:WON_TENDER
     domain: Entity
     range: Tender
     multivalued: true
   
-  signedContract:
+  SIGNED_CONTRACT:
     slot_uri: ocds:isSignatoryForContract
     domain: Entity
     range: Contract
     multivalued: true
+  
+  LOCATED_AT:
+    slot_uri: schema:location
+    domain: Entity
+    range: Location
+    inlined: true
 
-  inRole:
+  IN_ROLE:
     slot_uri: org:role
     domain: TenurePeriod
     range: Role
     inlined: true
 
-  isMember:
+  DURING_PERIOD:
     slot_uri: org:member
     domain: Person 
     range: TenurePeriod
     inlined: true
+    multivalued: true
+  
+  DIRECTOR_OR_MANAGER_FOR:
+    slot_uri: ext:DIRECTOR_OR_MANAGER_FOR
+    domain: Person 
+    range: Entity
+    multivalued: true
+
+  SHAREHOLDER_FOR:
+    slot_uri: ext:SHAREHOLDER_FOR
+    domain: Person 
+    range: Entity
     multivalued: true
 
 

@@ -7,17 +7,17 @@ class "TenurePeriod" [[{None}]] {
     {field} end_date : date  
 }
 class "Role" [[{None}]] {
-    {field} role_id : string  
+    {field} id : string  
     {field} role_name : string  
 }
 class "Person" [[{None}]] {
     {field} person_id : string  
     {field} person_name : string  
 }
-"TenurePeriod" *--> "0..1" "Role" : "inRole"
-"Person" *--> "0..*" "TenurePeriod" : "isMember"
+"TenurePeriod" *--> "0..1" "Role" : "IN_ROLE"
+"Person" *--> "0..*" "TenurePeriod" : "DURING_PERIOD"
 class "Tender" [[{None}]] {
-    {field} tender_id : string  
+    {field} id : string  
     {field} numberOfTenderers : integer  
     {field} procurement_method : procurementMethodEnum  
     {field} procedure_type : string  
@@ -28,42 +28,47 @@ class "Tender" [[{None}]] {
     {field} centralized_procedure : boolean  
 }
 class "Contract" [[{None}]] {
-    {field} contract_id : string  
+    {field} id : string  
     {field} signing_date : datetime  
-    {field} initial_value : decimal  
-    {field} final_value : decimal  
+    {field} initial_value : float  
+    {field} final_value : float  
     {field} execution_deadline : integer  
     {field} contract_type : ContractTypeEnum  [1..*]
     {field} causes_deadline_change : string  
     {field} causes_price_change : string  
 }
 class "Entity" [[{None}]] {
-    {field} entity_id : string  
+    {field} id : string  
     {field} entity_name : string  
+    {field} valid_nif : boolean  
 }
-"Tender" --> "1" "Contract" : "awardsContract"
-"Entity" *--> "0..*" "Tender" : "isProcuringEntityFor"
-"Entity" *--> "0..*" "Tender" : "isTendererFor"
-"Entity" *--> "0..*" "Tender" : "wonTender"
-"Entity" *--> "0..*" "Role" : "hasRole"
+"Tender" --> "1" "Contract" : "AWARDS_CONTRACT"
+"Entity" --> "0..*" "Tender" : "IS_PROCURING_ENTITY_FOR"
+"Entity" --> "0..*" "Tender" : "IS_TENDERER_FOR"
+"Entity" --> "0..*" "Tender" : "WON_TENDER"
+"Entity" *--> "0..*" "Role" : "HAS_ROLE"
+"Person" --> "0..*" "Entity" : "SHAREHOLDER_FOR"
+"Person" --> "0..*" "Entity" : "DIRECTOR_OR_MANAGER_FOR"
 class "Location" [[{None}]] {
-    {field} address_id : string  
+    {field} id : string  
     {field} country : string  
     {field} district : string  
     {field} municipality : string  
 }
-"Contract" *--> "1..*" "Location" : "executedAtLocation"
+"Contract" *--> "0..*" "Location" : "EXECUTED_AT_LOCATION"
+"Entity" *--> "0..1" "Location" : "LOCATED_AT"
+"Entity" --> "0..*" "Contract" : "SIGNED_CONTRACT"
 class "Document" [[{None}]] {
-    {field} document_id : string  
-    {field} document_type : string  
+    {field} id : string  
     {field} document_url : string  
+    {field} document_description : string  
 }
-"Contract" *--> "0..*" "Document" : "hasDocuments"
+"Contract" *--> "0..*" "Document" : "HAS_DOCUMENT"
 class "CPV" [[{None}]] {
-    {field} cpv_id : string  
+    {field} id : string  
     {field} label : string  
     {field} level : string  
 }
-"Contract" --> "1" "CPV" : "hasClassification"
-"CPV" *--> "0..1" "CPV" : "broader"
+"Contract" --> "0..*" "CPV" : "HAS_CPV_CLASSIFICATION"
+"CPV" *--> "0..1" "CPV" : "BROADER"
 @enduml

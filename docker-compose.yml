@@ -39,6 +39,15 @@ services:
       # - neo4j-plugins:/plugins
       - neo4j-backups:/backups
 
+  neodash:
+    image: neo4jlabs/neodash:latest
+    container_name: neodash
+    ports:
+      - "5005:5005"
+    restart: unless-stopped
+    depends_on:
+      - neo4j
+
 volumes:
   couchdb_data:
     driver: local

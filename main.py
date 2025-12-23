@@ -13,6 +13,8 @@ from sources.gold.entities_gold import EntitiesGoldSource
 from sources.gold.contracts_gold import ContractsGoldSource
 from sources.cpv_structure_source import CPVStructureSource
 from sources.graph_mappers.contract_mapper import contract_mapper
+from sources.graph_mappers.entity_mapper import entity_mapper
+from sources.graph_mappers.orbis_mapper import orbis_mapper
 from elt_core.graph_loader import GraphLoader
 import model 
 
@@ -23,7 +25,7 @@ RUN_SCRAPER = False
 # Configuration of sources: (SourceClass, id_column, filename)
 SOURCES_CONFIG = [
     # (ContractsSource, 'contracts_2009_2024.parquet', 'contract_id'),
-    #(AnuarioOCCSource, 'anuario_occ_table.csv', None),
+    # (AnuarioOCCSource, 'anuario_occ_table.csv', None),
     # (CPVStructureSource, 'cpv.json', None),
     # (OrbisDMSource, 'orbis_dm.csv', None),
     # (OrbisSHSource, 'orbis_sh.csv', None),
@@ -34,6 +36,12 @@ GOLD_SOURCES_CONFIG = [
     #ContractsGoldSource,
     #OrbisGoldSource,
     #EntitiesGoldSource,
+]
+
+GRAPH_LOADER_CONFIG = [
+    #EntitiesGoldSource,
+    ContractsGoldSource,
+    OrbisGoldSource,
 ]
 
 def initialize_db_connector():
@@ -52,7 +60,7 @@ def process_sources(db_connector, data_dir, sources_config):
     for source_class, filename, id_column in sources_config:
         file_path = data_dir / filename
 
-        if not file_path.exists():
+        if not file_path.exists(): 
             print(f"Skipping {filename}: File not found at {file_path}")
             continue
 
@@ -60,7 +68,7 @@ def process_sources(db_connector, data_dir, sources_config):
         print(f"Processing file: {file_path}")
         try:
             source_instance = source_class(db_connector=db_connector, file_path=file_path, id_column=id_column)
-            source_instance.run()
+            source_instance.run(batch_size=10000)
         except Exception as e:
             print(f"Pipeline failed for {filename}: {e}")
             traceback.print_exc()
@@ -86,7 +94,7 @@ def run_gold_layer(db_connector, gold_sources_config):
         print(f"Gold Layer failed: {e}")
         traceback.print_exc()
 
-def run_graph_loader(db_connector):
+def run_graph_loader(db_connector, graph_loader_config):
     """Initialize and run the graph loader with Neo4j driver."""
     import os
     
@@ -104,16 +112,18 @@ def run_graph_loader(db_connector):
         neo4j_auth=(NEO4J_USER, NEO4J_PASSWORD),
         model_module=model
     )
+    loader.init_neo4j_schema()
     
     try:
-        # Run sync - no need to register collections anymore
-        loader.sync_gold_db(
-            couch_db_name="contracts_gold",
-            doc_mapper_func=contract_mapper
-        )
+        for graph_source_class in graph_loader_config:
+    
+            loader.sync_gold_db(
+                couch_db_name=graph_source_class.source_name,
+                doc_mapper_func=graph_source_class.graph_mapper,
+                batch_size=10000
+            )
         
-        print("Graph sync completed successfully!")
-        
+        print("Graph sync completed successfully!")        
         # Log validation errors if any
         if loader.validation_errors:
             print(f"\n⚠️  {len(loader.validation_errors)} validation errors occurred.")
@@ -147,7 +157,8 @@ def main():
     if GOLD_SOURCES_CONFIG:
         run_gold_layer(db_connector, GOLD_SOURCES_CONFIG)
 
-    run_graph_loader(db_connector)
+    if GRAPH_LOADER_CONFIG:
+        run_graph_loader(db_connector, GRAPH_LOADER_CONFIG)
 
 if __name__ == "__main__":
     main()

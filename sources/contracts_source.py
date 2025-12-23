@@ -88,6 +88,11 @@ class ContractsSource(BaseDataSource):
             df = map_location_fixes(df, 'execution_location', 'country', COUNTRY_CHANGES_MAP, logger=self.logger)
             df = map_location_fixes(df, 'execution_location', 'district', DISTRICT_CHANGES_MAP, logger=self.logger)
             df = map_location_fixes(df, 'execution_location', 'municipality', MUNICIPALITY_CHANGES_MAP, logger=self.logger)
+            # Remove items where country and district are None
+            df['execution_location'] = df['execution_location'].apply(
+                lambda locs: [loc for loc in locs if any(loc.get(k) for k in ['country', 'district'])] if isinstance(locs, list) else locs
+            )
+            self.logger.info("Removed empty location objects from execution_location")
 
         # Step 10: Add number of tenderers by inspecting contestants column
         df = add_column(df, 'numberOfTenderers', df['contestants'].apply(lambda x: len(x) if isinstance(x, list) else 0))

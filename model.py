@@ -1,5 +1,5 @@
 # Auto generated from schema.yaml by pythongen.py version: 0.0.1
-# Generation date: 2025-12-22T12:16:25
+# Generation date: 2025-12-22T22:02:30
 # Schema: KnownetApplicationProfile
 #
 # id: https://example.org/knownet
@@ -107,7 +107,7 @@ class RoleId(extended_str):
     pass
 
 
-class PersonPersonId(extended_str):
+class PersonId(extended_str):
     pass
 
 
@@ -121,14 +121,14 @@ class Contract(YAMLRoot):
     class_model_uri: ClassVar[URIRef] = DATA.Contract
 
     id: Union[str, ContractId] = None
-    executedAtLocation: Union[dict[Union[str, LocationId], Union[dict, "Location"]], list[Union[dict, "Location"]]] = empty_dict()
     signing_date: Union[str, XSDDateTime] = None
     initial_value: float = None
     final_value: float = None
     execution_deadline: int = None
     contract_type: Union[Union[str, "ContractTypeEnum"], list[Union[str, "ContractTypeEnum"]]] = None
-    hasClassification: Optional[Union[Union[str, CPVId], list[Union[str, CPVId]]]] = empty_list()
-    hasDocuments: Optional[Union[dict[Union[str, DocumentId], Union[dict, "Document"]], list[Union[dict, "Document"]]]] = empty_dict()
+    EXECUTED_AT_LOCATION: Optional[Union[dict[Union[str, LocationId], Union[dict, "Location"]], list[Union[dict, "Location"]]]] = empty_dict()
+    HAS_CPV_CLASSIFICATION: Optional[Union[Union[str, CPVId], list[Union[str, CPVId]]]] = empty_list()
+    HAS_DOCUMENT: Optional[Union[dict[Union[str, DocumentId], Union[dict, "Document"]], list[Union[dict, "Document"]]]] = empty_dict()
     causes_deadline_change: Optional[str] = None
     causes_price_change: Optional[str] = None
 
@@ -137,10 +137,6 @@ class Contract(YAMLRoot):
             self.MissingRequiredField("id")
         if not isinstance(self.id, ContractId):
             self.id = ContractId(self.id)
-
-        if self._is_empty(self.executedAtLocation):
-            self.MissingRequiredField("executedAtLocation")
-        self._normalize_inlined_as_dict(slot_name="executedAtLocation", slot_type=Location, key_name="id", keyed=True)
 
         if self._is_empty(self.signing_date):
             self.MissingRequiredField("signing_date")
@@ -168,11 +164,13 @@ class Contract(YAMLRoot):
             self.contract_type = [self.contract_type] if self.contract_type is not None else []
         self.contract_type = [v if isinstance(v, ContractTypeEnum) else ContractTypeEnum(v) for v in self.contract_type]
 
-        if not isinstance(self.hasClassification, list):
-            self.hasClassification = [self.hasClassification] if self.hasClassification is not None else []
-        self.hasClassification = [v if isinstance(v, CPVId) else CPVId(v) for v in self.hasClassification]
+        self._normalize_inlined_as_dict(slot_name="EXECUTED_AT_LOCATION", slot_type=Location, key_name="id", keyed=True)
 
-        self._normalize_inlined_as_dict(slot_name="hasDocuments", slot_type=Document, key_name="id", keyed=True)
+        if not isinstance(self.HAS_CPV_CLASSIFICATION, list):
+            self.HAS_CPV_CLASSIFICATION = [self.HAS_CPV_CLASSIFICATION] if self.HAS_CPV_CLASSIFICATION is not None else []
+        self.HAS_CPV_CLASSIFICATION = [v if isinstance(v, CPVId) else CPVId(v) for v in self.HAS_CPV_CLASSIFICATION]
+
+        self._normalize_inlined_as_dict(slot_name="HAS_DOCUMENT", slot_type=Document, key_name="id", keyed=True)
 
         if self.causes_deadline_change is not None and not isinstance(self.causes_deadline_change, str):
             self.causes_deadline_change = str(self.causes_deadline_change)
@@ -193,7 +191,7 @@ class Tender(YAMLRoot):
     class_model_uri: ClassVar[URIRef] = DATA.Tender
 
     id: Union[str, TenderId] = None
-    awardsContract: Union[str, ContractId] = None
+    AWARDS_CONTRACT: Union[str, ContractId] = None
     procurement_method: Union[str, "ProcurementMethodEnum"] = None
     procedure_type: str = None
     numberOfTenderers: Optional[int] = None
@@ -209,10 +207,10 @@ class Tender(YAMLRoot):
         if not isinstance(self.id, TenderId):
             self.id = TenderId(self.id)
 
-        if self._is_empty(self.awardsContract):
-            self.MissingRequiredField("awardsContract")
-        if not isinstance(self.awardsContract, ContractId):
-            self.awardsContract = ContractId(self.awardsContract)
+        if self._is_empty(self.AWARDS_CONTRACT):
+            self.MissingRequiredField("AWARDS_CONTRACT")
+        if not isinstance(self.AWARDS_CONTRACT, ContractId):
+            self.AWARDS_CONTRACT = ContractId(self.AWARDS_CONTRACT)
 
         if self._is_empty(self.procurement_method):
             self.MissingRequiredField("procurement_method")
@@ -291,7 +289,7 @@ class CPV(YAMLRoot):
     id: Union[str, CPVId] = None
     label: str = None
     level: str = None
-    broader: Optional[Union[dict, "CPV"]] = None
+    BROADER: Optional[Union[dict, "CPV"]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.id):
@@ -309,8 +307,8 @@ class CPV(YAMLRoot):
         if not isinstance(self.level, str):
             self.level = str(self.level)
 
-        if self.broader is not None and not isinstance(self.broader, CPV):
-            self.broader = CPV(**as_dict(self.broader))
+        if self.BROADER is not None and not isinstance(self.BROADER, CPV):
+            self.BROADER = CPV(**as_dict(self.BROADER))
 
         super().__post_init__(**kwargs)
 
@@ -355,12 +353,14 @@ class Entity(YAMLRoot):
     class_model_uri: ClassVar[URIRef] = DATA.Entity
 
     id: Union[str, EntityId] = None
-    hasRole: Optional[Union[dict[Union[str, RoleId], Union[dict, "Role"]], list[Union[dict, "Role"]]]] = empty_dict()
-    isProcuringEntityFor: Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]] = empty_list()
-    isTendererFor: Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]] = empty_list()
-    wonTender: Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]] = empty_list()
-    signedContract: Optional[Union[Union[str, ContractId], list[Union[str, ContractId]]]] = empty_list()
+    HAS_ROLE: Optional[Union[dict[Union[str, RoleId], Union[dict, "Role"]], list[Union[dict, "Role"]]]] = empty_dict()
+    IS_PROCURING_ENTITY_FOR: Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]] = empty_list()
+    IS_TENDERER_FOR: Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]] = empty_list()
+    WON_TENDER: Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]] = empty_list()
+    SIGNED_CONTRACT: Optional[Union[Union[str, ContractId], list[Union[str, ContractId]]]] = empty_list()
+    LOCATED_AT: Optional[Union[dict, Location]] = None
     entity_name: Optional[str] = None
+    valid_nif: Optional[Union[bool, Bool]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.id):
@@ -368,26 +368,32 @@ class Entity(YAMLRoot):
         if not isinstance(self.id, EntityId):
             self.id = EntityId(self.id)
 
-        self._normalize_inlined_as_dict(slot_name="hasRole", slot_type=Role, key_name="id", keyed=True)
+        self._normalize_inlined_as_dict(slot_name="HAS_ROLE", slot_type=Role, key_name="id", keyed=True)
 
-        if not isinstance(self.isProcuringEntityFor, list):
-            self.isProcuringEntityFor = [self.isProcuringEntityFor] if self.isProcuringEntityFor is not None else []
-        self.isProcuringEntityFor = [v if isinstance(v, TenderId) else TenderId(v) for v in self.isProcuringEntityFor]
+        if not isinstance(self.IS_PROCURING_ENTITY_FOR, list):
+            self.IS_PROCURING_ENTITY_FOR = [self.IS_PROCURING_ENTITY_FOR] if self.IS_PROCURING_ENTITY_FOR is not None else []
+        self.IS_PROCURING_ENTITY_FOR = [v if isinstance(v, TenderId) else TenderId(v) for v in self.IS_PROCURING_ENTITY_FOR]
 
-        if not isinstance(self.isTendererFor, list):
-            self.isTendererFor = [self.isTendererFor] if self.isTendererFor is not None else []
-        self.isTendererFor = [v if isinstance(v, TenderId) else TenderId(v) for v in self.isTendererFor]
+        if not isinstance(self.IS_TENDERER_FOR, list):
+            self.IS_TENDERER_FOR = [self.IS_TENDERER_FOR] if self.IS_TENDERER_FOR is not None else []
+        self.IS_TENDERER_FOR = [v if isinstance(v, TenderId) else TenderId(v) for v in self.IS_TENDERER_FOR]
 
-        if not isinstance(self.wonTender, list):
-            self.wonTender = [self.wonTender] if self.wonTender is not None else []
-        self.wonTender = [v if isinstance(v, TenderId) else TenderId(v) for v in self.wonTender]
+        if not isinstance(self.WON_TENDER, list):
+            self.WON_TENDER = [self.WON_TENDER] if self.WON_TENDER is not None else []
+        self.WON_TENDER = [v if isinstance(v, TenderId) else TenderId(v) for v in self.WON_TENDER]
 
-        if not isinstance(self.signedContract, list):
-            self.signedContract = [self.signedContract] if self.signedContract is not None else []
-        self.signedContract = [v if isinstance(v, ContractId) else ContractId(v) for v in self.signedContract]
+        if not isinstance(self.SIGNED_CONTRACT, list):
+            self.SIGNED_CONTRACT = [self.SIGNED_CONTRACT] if self.SIGNED_CONTRACT is not None else []
+        self.SIGNED_CONTRACT = [v if isinstance(v, ContractId) else ContractId(v) for v in self.SIGNED_CONTRACT]
+
+        if self.LOCATED_AT is not None and not isinstance(self.LOCATED_AT, Location):
+            self.LOCATED_AT = Location(**as_dict(self.LOCATED_AT))
 
         if self.entity_name is not None and not isinstance(self.entity_name, str):
             self.entity_name = str(self.entity_name)
+
+        if self.valid_nif is not None and not isinstance(self.valid_nif, Bool):
+            self.valid_nif = Bool(self.valid_nif)
 
         super().__post_init__(**kwargs)
 
@@ -425,13 +431,13 @@ class TenurePeriod(YAMLRoot):
     class_name: ClassVar[str] = "TenurePeriod"
     class_model_uri: ClassVar[URIRef] = DATA.TenurePeriod
 
-    inRole: Optional[Union[dict, Role]] = None
+    IN_ROLE: Optional[Union[dict, Role]] = None
     start_date: Optional[Union[str, XSDDate]] = None
     end_date: Optional[Union[str, XSDDate]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
-        if self.inRole is not None and not isinstance(self.inRole, Role):
-            self.inRole = Role(**as_dict(self.inRole))
+        if self.IN_ROLE is not None and not isinstance(self.IN_ROLE, Role):
+            self.IN_ROLE = Role(**as_dict(self.IN_ROLE))
 
         if self.start_date is not None and not isinstance(self.start_date, XSDDate):
             self.start_date = XSDDate(self.start_date)
@@ -451,19 +457,29 @@ class Person(YAMLRoot):
     class_name: ClassVar[str] = "Person"
     class_model_uri: ClassVar[URIRef] = DATA.Person
 
-    person_id: Union[str, PersonPersonId] = None
-    isMember: Optional[Union[Union[dict, TenurePeriod], list[Union[dict, TenurePeriod]]]] = empty_list()
+    id: Union[str, PersonId] = None
+    DURING_PERIOD: Optional[Union[Union[dict, TenurePeriod], list[Union[dict, TenurePeriod]]]] = empty_list()
+    DIRECTOR_OR_MANAGER_FOR: Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]] = empty_list()
+    SHAREHOLDER_FOR: Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]] = empty_list()
     person_name: Optional[str] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.person_id):
-            self.MissingRequiredField("person_id")
-        if not isinstance(self.person_id, PersonPersonId):
-            self.person_id = PersonPersonId(self.person_id)
+        if self._is_empty(self.id):
+            self.MissingRequiredField("id")
+        if not isinstance(self.id, PersonId):
+            self.id = PersonId(self.id)
 
-        if not isinstance(self.isMember, list):
-            self.isMember = [self.isMember] if self.isMember is not None else []
-        self.isMember = [v if isinstance(v, TenurePeriod) else TenurePeriod(**as_dict(v)) for v in self.isMember]
+        if not isinstance(self.DURING_PERIOD, list):
+            self.DURING_PERIOD = [self.DURING_PERIOD] if self.DURING_PERIOD is not None else []
+        self.DURING_PERIOD = [v if isinstance(v, TenurePeriod) else TenurePeriod(**as_dict(v)) for v in self.DURING_PERIOD]
+
+        if not isinstance(self.DIRECTOR_OR_MANAGER_FOR, list):
+            self.DIRECTOR_OR_MANAGER_FOR = [self.DIRECTOR_OR_MANAGER_FOR] if self.DIRECTOR_OR_MANAGER_FOR is not None else []
+        self.DIRECTOR_OR_MANAGER_FOR = [v if isinstance(v, EntityId) else EntityId(v) for v in self.DIRECTOR_OR_MANAGER_FOR]
+
+        if not isinstance(self.SHAREHOLDER_FOR, list):
+            self.SHAREHOLDER_FOR = [self.SHAREHOLDER_FOR] if self.SHAREHOLDER_FOR is not None else []
+        self.SHAREHOLDER_FOR = [v if isinstance(v, EntityId) else EntityId(v) for v in self.SHAREHOLDER_FOR]
 
         if self.person_name is not None and not isinstance(self.person_name, str):
             self.person_name = str(self.person_name)
@@ -553,41 +569,50 @@ class ProcurementMethodEnum(EnumDefinitionImpl):
 class slots:
     pass
 
-slots.awardsContract = Slot(uri=EXT.awardsContract, name="awardsContract", curie=EXT.curie('awardsContract'),
-                   model_uri=DATA.awardsContract, domain=Tender, range=Union[str, ContractId])
+slots.AWARDS_CONTRACT = Slot(uri=EXT.AWARDS_CONTRACT, name="AWARDS_CONTRACT", curie=EXT.curie('AWARDS_CONTRACT'),
+                   model_uri=DATA.AWARDS_CONTRACT, domain=Tender, range=Union[str, ContractId])
 
-slots.executedAtLocation = Slot(uri=SCHEMA.location, name="executedAtLocation", curie=SCHEMA.curie('location'),
-                   model_uri=DATA.executedAtLocation, domain=Contract, range=Union[dict[Union[str, LocationId], Union[dict, "Location"]], list[Union[dict, "Location"]]])
+slots.EXECUTED_AT_LOCATION = Slot(uri=SCHEMA.location, name="EXECUTED_AT_LOCATION", curie=SCHEMA.curie('location'),
+                   model_uri=DATA.EXECUTED_AT_LOCATION, domain=Contract, range=Optional[Union[dict[Union[str, LocationId], Union[dict, "Location"]], list[Union[dict, "Location"]]]])
 
-slots.hasClassification = Slot(uri=OCDS.hasClassification, name="hasClassification", curie=OCDS.curie('hasClassification'),
-                   model_uri=DATA.hasClassification, domain=Contract, range=Optional[Union[Union[str, CPVId], list[Union[str, CPVId]]]])
+slots.HAS_CPV_CLASSIFICATION = Slot(uri=OCDS.HAS_CPV_CLASSIFICATION, name="HAS_CPV_CLASSIFICATION", curie=OCDS.curie('HAS_CPV_CLASSIFICATION'),
+                   model_uri=DATA.HAS_CPV_CLASSIFICATION, domain=Contract, range=Optional[Union[Union[str, CPVId], list[Union[str, CPVId]]]])
 
-slots.broader = Slot(uri=SKOS.broader, name="broader", curie=SKOS.curie('broader'),
-                   model_uri=DATA.broader, domain=CPV, range=Optional[Union[dict, "CPV"]])
+slots.BROADER = Slot(uri=SKOS.BROADER, name="BROADER", curie=SKOS.curie('BROADER'),
+                   model_uri=DATA.BROADER, domain=CPV, range=Optional[Union[dict, "CPV"]])
 
-slots.hasDocuments = Slot(uri=OCDS.hasDocument, name="hasDocuments", curie=OCDS.curie('hasDocument'),
-                   model_uri=DATA.hasDocuments, domain=Contract, range=Optional[Union[dict[Union[str, DocumentId], Union[dict, "Document"]], list[Union[dict, "Document"]]]])
+slots.HAS_DOCUMENT = Slot(uri=OCDS.hasDocument, name="HAS_DOCUMENT", curie=OCDS.curie('hasDocument'),
+                   model_uri=DATA.HAS_DOCUMENT, domain=Contract, range=Optional[Union[dict[Union[str, DocumentId], Union[dict, "Document"]], list[Union[dict, "Document"]]]])
 
-slots.hasRole = Slot(uri=EXT.hasRole, name="hasRole", curie=EXT.curie('hasRole'),
-                   model_uri=DATA.hasRole, domain=Entity, range=Optional[Union[dict[Union[str, RoleId], Union[dict, "Role"]], list[Union[dict, "Role"]]]])
+slots.HAS_ROLE = Slot(uri=EXT.HAS_ROLE, name="HAS_ROLE", curie=EXT.curie('HAS_ROLE'),
+                   model_uri=DATA.HAS_ROLE, domain=Entity, range=Optional[Union[dict[Union[str, RoleId], Union[dict, "Role"]], list[Union[dict, "Role"]]]])
 
-slots.isProcuringEntityFor = Slot(uri=OCDS.isProcuringEntityFor, name="isProcuringEntityFor", curie=OCDS.curie('isProcuringEntityFor'),
-                   model_uri=DATA.isProcuringEntityFor, domain=Entity, range=Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]])
+slots.IS_PROCURING_ENTITY_FOR = Slot(uri=OCDS.IS_PROCURING_ENTITY_FOR, name="IS_PROCURING_ENTITY_FOR", curie=OCDS.curie('IS_PROCURING_ENTITY_FOR'),
+                   model_uri=DATA.IS_PROCURING_ENTITY_FOR, domain=Entity, range=Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]])
 
-slots.isTendererFor = Slot(uri=OCDS.isTendererFor, name="isTendererFor", curie=OCDS.curie('isTendererFor'),
-                   model_uri=DATA.isTendererFor, domain=Entity, range=Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]])
+slots.IS_TENDERER_FOR = Slot(uri=OCDS.IS_TENDERER_FOR, name="IS_TENDERER_FOR", curie=OCDS.curie('IS_TENDERER_FOR'),
+                   model_uri=DATA.IS_TENDERER_FOR, domain=Entity, range=Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]])
 
-slots.wonTender = Slot(uri=EXT.wonTender, name="wonTender", curie=EXT.curie('wonTender'),
-                   model_uri=DATA.wonTender, domain=Entity, range=Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]])
+slots.WON_TENDER = Slot(uri=EXT.WON_TENDER, name="WON_TENDER", curie=EXT.curie('WON_TENDER'),
+                   model_uri=DATA.WON_TENDER, domain=Entity, range=Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]])
 
-slots.signedContract = Slot(uri=OCDS.isSignatoryForContract, name="signedContract", curie=OCDS.curie('isSignatoryForContract'),
-                   model_uri=DATA.signedContract, domain=Entity, range=Optional[Union[Union[str, ContractId], list[Union[str, ContractId]]]])
+slots.SIGNED_CONTRACT = Slot(uri=OCDS.isSignatoryForContract, name="SIGNED_CONTRACT", curie=OCDS.curie('isSignatoryForContract'),
+                   model_uri=DATA.SIGNED_CONTRACT, domain=Entity, range=Optional[Union[Union[str, ContractId], list[Union[str, ContractId]]]])
 
-slots.inRole = Slot(uri=ORG.role, name="inRole", curie=ORG.curie('role'),
-                   model_uri=DATA.inRole, domain=TenurePeriod, range=Optional[Union[dict, Role]])
+slots.LOCATED_AT = Slot(uri=SCHEMA.location, name="LOCATED_AT", curie=SCHEMA.curie('location'),
+                   model_uri=DATA.LOCATED_AT, domain=Entity, range=Optional[Union[dict, Location]])
 
-slots.isMember = Slot(uri=ORG.member, name="isMember", curie=ORG.curie('member'),
-                   model_uri=DATA.isMember, domain=Person, range=Optional[Union[Union[dict, TenurePeriod], list[Union[dict, TenurePeriod]]]])
+slots.IN_ROLE = Slot(uri=ORG.role, name="IN_ROLE", curie=ORG.curie('role'),
+                   model_uri=DATA.IN_ROLE, domain=TenurePeriod, range=Optional[Union[dict, Role]])
+
+slots.DURING_PERIOD = Slot(uri=ORG.member, name="DURING_PERIOD", curie=ORG.curie('member'),
+                   model_uri=DATA.DURING_PERIOD, domain=Person, range=Optional[Union[Union[dict, TenurePeriod], list[Union[dict, TenurePeriod]]]])
+
+slots.DIRECTOR_OR_MANAGER_FOR = Slot(uri=EXT.DIRECTOR_OR_MANAGER_FOR, name="DIRECTOR_OR_MANAGER_FOR", curie=EXT.curie('DIRECTOR_OR_MANAGER_FOR'),
+                   model_uri=DATA.DIRECTOR_OR_MANAGER_FOR, domain=Person, range=Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]])
+
+slots.SHAREHOLDER_FOR = Slot(uri=EXT.SHAREHOLDER_FOR, name="SHAREHOLDER_FOR", curie=EXT.curie('SHAREHOLDER_FOR'),
+                   model_uri=DATA.SHAREHOLDER_FOR, domain=Person, range=Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]])
 
 slots.contract__id = Slot(uri=OCDS.contractId, name="contract__id", curie=OCDS.curie('contractId'),
                    model_uri=DATA.contract__id, domain=None, range=URIRef)
@@ -676,6 +701,9 @@ slots.entity__id = Slot(uri=ORG.identifier, name="entity__id", curie=ORG.curie('
 slots.entity__entity_name = Slot(uri=ORG.name, name="entity__entity_name", curie=ORG.curie('name'),
                    model_uri=DATA.entity__entity_name, domain=None, range=Optional[str])
 
+slots.entity__valid_nif = Slot(uri=EXT.hasValidNif, name="entity__valid_nif", curie=EXT.curie('hasValidNif'),
+                   model_uri=DATA.entity__valid_nif, domain=None, range=Optional[Union[bool, Bool]])
+
 slots.role__id = Slot(uri=ORG.identifier, name="role__id", curie=ORG.curie('identifier'),
                    model_uri=DATA.role__id, domain=None, range=URIRef)
 
@@ -688,8 +716,8 @@ slots.tenurePeriod__start_date = Slot(uri=SCHEMA.startDate, name="tenurePeriod__
 slots.tenurePeriod__end_date = Slot(uri=SCHEMA.endDate, name="tenurePeriod__end_date", curie=SCHEMA.curie('endDate'),
                    model_uri=DATA.tenurePeriod__end_date, domain=None, range=Optional[Union[str, XSDDate]])
 
-slots.person__person_id = Slot(uri=FOAF.identifier, name="person__person_id", curie=FOAF.curie('identifier'),
-                   model_uri=DATA.person__person_id, domain=None, range=URIRef)
+slots.person__id = Slot(uri=FOAF.identifier, name="person__id", curie=FOAF.curie('identifier'),
+                   model_uri=DATA.person__id, domain=None, range=URIRef)
 
 slots.person__person_name = Slot(uri=FOAF.name, name="person__person_name", curie=FOAF.curie('name'),
                    model_uri=DATA.person__person_name, domain=None, range=Optional[str])

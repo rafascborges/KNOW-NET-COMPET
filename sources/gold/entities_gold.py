@@ -1,8 +1,10 @@
 from typing import Dict, List, Any
 from elt_core.base_source import BaseDataSource
+from sources.graph_mappers.entity_mapper import entity_mapper
 
 class EntitiesGoldSource(BaseDataSource):
     source_name = "entities_gold"
+    graph_mapper = entity_mapper
 
     def transform(self, scraper_data: List[Dict[str, Any]], anuario_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         self.logger.info("Transforming Entities Gold Data...")

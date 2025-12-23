@@ -132,3 +132,62 @@ def generate_batch_merge_nodes_query(
     params = {"batch": batch_items}
     
     return cypher.strip(), params
+
+
+def generate_batch_merge_relationships_query(
+    relationships: list
+) -> list:
+    """
+    Generate batched MERGE queries for multiple relationships, grouped by type.
+    
+    Since Cypher doesn't support dynamic relationship types in a single query,
+    we group relationships by type and return multiple queries.
+    
+    Args:
+        relationships: List of relationship dicts with keys:
+            - from_label: Source node label
+            - from_id: Source node ID
+            - to_label: Target node label
+            - to_id: Target node ID
+            - rel_type: Relationship type
+    
+    Returns:
+        List of (cypher_query, parameters_dict) tuples, one per relationship type
+    
+    Example:
+        >>> rels = [
+        ...     {
+        ...         'from_label': 'Contract',
+        ...         'from_id': '123',
+        ...         'to_label': 'Location',
+        ...         'to_id': 'loc:portugal',
+        ...         'rel_type': 'EXECUTED_AT_LOCATION'
+        ...     },
+        ...     ...
+        ... ]
+        >>> queries = generate_batch_merge_relationships_query(rels)
+        >>> # Returns list of (query, params) tuples
+    """
+    # Group relationships by type
+    grouped = {}
+    for rel in relationships:
+        rel_type = rel['rel_type']
+        if rel_type not in grouped:
+            grouped[rel_type] = []
+        grouped[rel_type].append(rel)
+    
+    # Generate a query for each relationship type
+    queries = []
+    for rel_type, rels in grouped.items():
+        cypher = f"""
+        UNWIND $batch AS item
+        MATCH (from:{rels[0]['from_label']} {{id: item.from_id}})
+        MATCH (to:{rels[0]['to_label']} {{id: item.to_id}})
+        MERGE (from)-[r:{rel_type}]->(to)
+        RETURN count(r) as created_count
+        """
+        
+        params = {"batch": rels}
+        queries.append((cypher.strip(), params))
+    
+    return queries

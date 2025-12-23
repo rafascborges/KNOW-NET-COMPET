@@ -1,8 +1,10 @@
 from typing import Dict, List, Any
 from elt_core.base_source import BaseDataSource
+from sources.graph_mappers.contract_mapper import contract_mapper
 
 class ContractsGoldSource(BaseDataSource):
     source_name = "contracts_gold"
+    graph_mapper = contract_mapper
 
     def transform(self, contracts_silver: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         gold_docs = []
@@ -11,7 +13,7 @@ class ContractsGoldSource(BaseDataSource):
             'contracting_agency': 'contracting_agency_vats',
             'contestants': 'contestants_vats'
         }
-
+        # Remove entities from silver data 
         for doc in contracts_silver:
             new_doc = doc.copy()
             
@@ -39,14 +41,6 @@ class ContractsGoldSource(BaseDataSource):
             
         return gold_docs
 
-    def graph_mappers(self, validated_obj):
-        """
-        Takes a validated Contract and Tender object (tree) from model.py 
-        and returns flat dictionaries for Neo4j.
-        """
-
-        
-        
 
     def run(self):
         self.logger.info("Running Contracts Gold Source...")
@@ -64,3 +58,16 @@ class ContractsGoldSource(BaseDataSource):
             self._save_in_batches(gold_docs, self.source_name, batch_size=5000)
         else:
             self.logger.warning("No valid gold records generated for Contracts Gold.")
+
+
+    def validate(self, doc):
+        """
+        Validate a single document.
+        """
+        return doc
+
+    def to_cypher_queries(self, validated_obj):
+        """
+        Takes a validated Contract and Tender object (tree) from model.py 
+        and returns flat dictionaries for Neo4j.
+        """
