@@ -58,16 +58,3 @@ class ContractsGoldSource(BaseDataSource):
             self._save_in_batches(gold_docs, self.source_name, batch_size=5000)
         else:
             self.logger.warning("No valid gold records generated for Contracts Gold.")
-
-
-    def validate(self, doc):
-        """
-        Validate a single document.
-        """
-        return doc
-
-    def to_cypher_queries(self, validated_obj):
-        """
-        Takes a validated Contract and Tender object (tree) from model.py 
-        and returns flat dictionaries for Neo4j.
-        """

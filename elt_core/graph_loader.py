@@ -130,7 +130,7 @@ class GraphLoader:
                     else:
                         self.logger.warning(f"  ✗ Failed to create constraint: {error_msg}")
         
-        self.logger.info(f"Schema initialization complete: {constraints_created} created, {constraints_existed} already existed")
+        self.logger.info(f"Schema initialization complete: {constraints_created} created")
 
     def sync_gold_db(self, couch_db_name: str, doc_mapper_func: Callable, batch_size: int = 1000):
         """
