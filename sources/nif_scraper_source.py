@@ -58,8 +58,7 @@ class NifScraperSource(BaseDataSource):
         - Writes results to a bronze database (default: 'nifs_scrape_bronze').
     """
     def __init__(self, db_connector):
-        # Initialize with a dummy path since this source doesn't read from a file
-        super().__init__("dummy_path", db_connector)
+        super().__init__(db_connector=db_connector, file_path=None)
         
         # Initialize session with retry strategy
         self.session = requests.Session()
@@ -209,13 +208,18 @@ class NifScraperSource(BaseDataSource):
 
         # If no blocks are found, it is unknown if the NIF is valid or not
         else:
-            # Look for postal code in the detail div
+            # Look for postal code and description in the detail div
             detail = soup.select_one("div.detail")
             if detail:
                 text = detail.get_text(" ", strip=True)
                 match = POSTAL_RE.search(text)
                 if match:
                     postal_code = match.group(0)
+                
+                # Extract description from search-title span (always update if found)
+                search_title = detail.select_one("span.search-title")
+                if search_title:
+                    description = search_title.get_text(strip=True)
 
             if postal_code:
                 valid_nif = True
@@ -223,6 +227,7 @@ class NifScraperSource(BaseDataSource):
         district = get_district_from_postal(postal_code) if postal_code else None
         
         return self._create_outcome(nif_str, valid_nif, postal_code, district, description)
+
 
     def _create_outcome(
         self, 

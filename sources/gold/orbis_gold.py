@@ -1,10 +1,8 @@
 from typing import Dict, List, Any, Set
 from elt_core.base_source import BaseDataSource
-from sources.graph_mappers.orbis_mapper import orbis_mapper
 
 class OrbisGoldSource(BaseDataSource):
     source_name = "orbis_gold"
-    graph_mapper = orbis_mapper
 
     def transform(self, dm_silver: List[Dict[str, Any]], sh_silver: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         # 1. Aggregation Structures

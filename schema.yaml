@@ -312,7 +312,6 @@ slots:
     slot_uri: skos:BROADER
     domain: CPV
     range: CPV
-    inlined: true
   
   HAS_DOCUMENT:
     slot_uri: ocds:hasDocument
@@ -422,4 +421,5 @@ enums:
       - "limited"
       - "selective"
       - "direct"
-      
+## gen-python schema.yaml > model.py
+## gen-plantuml schema.yaml > schema.puml

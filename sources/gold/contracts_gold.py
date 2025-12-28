@@ -1,10 +1,9 @@
 from typing import Dict, List, Any
 from elt_core.base_source import BaseDataSource
-from sources.graph_mappers.contract_mapper import contract_mapper
 
 class ContractsGoldSource(BaseDataSource):
     source_name = "contracts_gold"
-    graph_mapper = contract_mapper
+
 
     def transform(self, contracts_silver: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         gold_docs = []

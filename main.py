@@ -1,28 +1,34 @@
+import os
 import traceback
 from pathlib import Path
+
 from dotenv import load_dotenv
+
 from elt_core.db_connector import DBConnector
-from sources.contracts_source import ContractsSource
+from elt_core.graph_loader import GraphLoader
+import model
 from sources.anuario_occ_source import AnuarioOCCSource
+from sources.contracts_source import ContractsSource
+from sources.cpv_structure_source import CPVStructureSource
+from sources.gold.contracts_gold import ContractsGoldSource
+from sources.gold.entities_gold import EntitiesGoldSource
+from sources.gold.orbis_gold import OrbisGoldSource
+from sources.graph_mappers.contracts_mapper import contracts_mapper
+from sources.graph_mappers.entities_mapper import entities_mapper
+from sources.graph_mappers.orbis_mapper import orbis_mapper
+from sources.graph_mappers.cpv_mapper import cpv_mapper
 from sources.nif_scraper_source import NifScraperSource
 from sources.orbis_dm import OrbisDMSource
-from sources.orbis_sh import OrbisSHSource
 from sources.orbis_pt_companies_uci import OrbisPTCompaniesUCISource
-from sources.gold.orbis_gold import OrbisGoldSource
-from sources.gold.entities_gold import EntitiesGoldSource
-from sources.gold.contracts_gold import ContractsGoldSource
-from sources.cpv_structure_source import CPVStructureSource
-from sources.graph_mappers.contract_mapper import contract_mapper
-from sources.graph_mappers.entity_mapper import entity_mapper
-from sources.graph_mappers.orbis_mapper import orbis_mapper
-from elt_core.graph_loader import GraphLoader
-import model 
+from sources.orbis_sh import OrbisSHSource
+from sources.RI_parliament_source import RIParliamentSource
+
 
 
 MAX_WORKERS = 10
 RUN_SCRAPER = False
 
-# Configuration of sources: (SourceClass, id_column, filename)
+# Configuration of sources: (SourceClass, filename, id_column)
 SOURCES_CONFIG = [
     # (ContractsSource, 'contracts_2009_2024.parquet', 'contract_id'),
     # (AnuarioOCCSource, 'anuario_occ_table.csv', None),
@@ -30,18 +36,21 @@ SOURCES_CONFIG = [
     # (OrbisDMSource, 'orbis_dm.csv', None),
     # (OrbisSHSource, 'orbis_sh.csv', None),
     # (OrbisPTCompaniesUCISource, 'orbis_pt_companies_uci.csv', None)
+    # (RIParliamentSource, '04_sociedades.json', None),
 ]
 
 GOLD_SOURCES_CONFIG = [
+    #EntitiesGoldSource,
     #ContractsGoldSource,
     #OrbisGoldSource,
-    #EntitiesGoldSource,
+    
 ]
 
 GRAPH_LOADER_CONFIG = [
-    #EntitiesGoldSource,
-    ContractsGoldSource,
-    OrbisGoldSource,
+    #("entities_gold", entities_mapper),
+    #("contracts_gold", contracts_mapper),
+    #("orbis_gold", orbis_mapper),
+    ("cpv_structure_silver", cpv_mapper),
 ]
 
 def initialize_db_connector():
@@ -96,8 +105,6 @@ def run_gold_layer(db_connector, gold_sources_config):
 
 def run_graph_loader(db_connector, graph_loader_config):
     """Initialize and run the graph loader with Neo4j driver."""
-    import os
-    
     print("Starting Graph Loader...")
     
     # Neo4j connection details from environment variables
@@ -115,11 +122,11 @@ def run_graph_loader(db_connector, graph_loader_config):
     loader.init_neo4j_schema()
     
     try:
-        for graph_source_class in graph_loader_config:
+        for graph_source, graph_mapper in graph_loader_config:
     
             loader.sync_gold_db(
-                couch_db_name=graph_source_class.source_name,
-                doc_mapper_func=graph_source_class.graph_mapper,
+                couch_db_name=graph_source,
+                doc_mapper_func=graph_mapper,
                 batch_size=10000
             )
         

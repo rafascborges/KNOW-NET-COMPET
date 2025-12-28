@@ -48,7 +48,7 @@ TENDER_FIELDS = {
 # MAIN MAPPER FUNCTION
 # =============================================================================
 
-def contract_mapper(raw_doc: dict) -> dict:
+def contracts_mapper(raw_doc: dict) -> dict:
     """
     Takes a raw mixed JSON (Tender + Contract fields flat) 
     and returns a graph batch with validated dicts.

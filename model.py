@@ -1,5 +1,5 @@
 # Auto generated from schema.yaml by pythongen.py version: 0.0.1
-# Generation date: 2025-12-22T22:02:30
+# Generation date: 2025-12-28T17:40:58
 # Schema: KnownetApplicationProfile
 #
 # id: https://example.org/knownet
@@ -289,7 +289,7 @@ class CPV(YAMLRoot):
     id: Union[str, CPVId] = None
     label: str = None
     level: str = None
-    BROADER: Optional[Union[dict, "CPV"]] = None
+    BROADER: Optional[Union[str, CPVId]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.id):
@@ -307,8 +307,8 @@ class CPV(YAMLRoot):
         if not isinstance(self.level, str):
             self.level = str(self.level)
 
-        if self.BROADER is not None and not isinstance(self.BROADER, CPV):
-            self.BROADER = CPV(**as_dict(self.BROADER))
+        if self.BROADER is not None and not isinstance(self.BROADER, CPVId):
+            self.BROADER = CPVId(self.BROADER)
 
         super().__post_init__(**kwargs)
 
@@ -579,7 +579,7 @@ slots.HAS_CPV_CLASSIFICATION = Slot(uri=OCDS.HAS_CPV_CLASSIFICATION, name="HAS_C
                    model_uri=DATA.HAS_CPV_CLASSIFICATION, domain=Contract, range=Optional[Union[Union[str, CPVId], list[Union[str, CPVId]]]])
 
 slots.BROADER = Slot(uri=SKOS.BROADER, name="BROADER", curie=SKOS.curie('BROADER'),
-                   model_uri=DATA.BROADER, domain=CPV, range=Optional[Union[dict, "CPV"]])
+                   model_uri=DATA.BROADER, domain=CPV, range=Optional[Union[str, CPVId]])
 
 slots.HAS_DOCUMENT = Slot(uri=OCDS.hasDocument, name="HAS_DOCUMENT", curie=OCDS.curie('hasDocument'),
                    model_uri=DATA.HAS_DOCUMENT, domain=Contract, range=Optional[Union[dict[Union[str, DocumentId], Union[dict, "Document"]], list[Union[dict, "Document"]]]])

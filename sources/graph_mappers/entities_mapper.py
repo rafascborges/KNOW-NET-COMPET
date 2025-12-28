@@ -28,7 +28,7 @@ ENTITY_FIELDS = {
 # MAIN MAPPER FUNCTION
 # =============================================================================
 
-def entity_mapper(raw_doc: dict) -> dict:
+def entities_mapper(raw_doc: dict) -> dict:
     """
     Takes a raw entity document from entities_gold 
     and returns a graph batch with validated dicts.
