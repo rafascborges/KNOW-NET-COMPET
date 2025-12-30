@@ -18,7 +18,7 @@ def get_location_id(country: str, district: Optional[str] = None, municipality: 
         parts.append(slugify(district))
     if municipality:
         parts.append(slugify(municipality))
-    return f"loc:{'-'.join(parts)}"
+    return f"loc:{'/'.join(parts)}"
 
 
 def get_document_url(document_id: str) -> str:

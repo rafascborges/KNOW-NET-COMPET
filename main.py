@@ -48,9 +48,9 @@ GOLD_SOURCES_CONFIG = [
 
 GRAPH_LOADER_CONFIG = [
     #("entities_gold", entities_mapper),
-    #("contracts_gold", contracts_mapper),
+    ("contracts_gold", contracts_mapper),
     #("orbis_gold", orbis_mapper),
-    ("cpv_structure_silver", cpv_mapper),
+    #("cpv_structure_silver", cpv_mapper),
 ]
 
 def initialize_db_connector():

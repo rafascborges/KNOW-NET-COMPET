@@ -74,29 +74,74 @@ def contracts_mapper(raw_doc: dict) -> dict:
     shared_id = str(data.get('contract_id'))
 
     # -------------------------------------------------------------------------
-    # STEP A: Process LOCATIONS
+    # STEP A: Process LOCATIONS (with BROADER hierarchy)
     # -------------------------------------------------------------------------
-    location_dicts, location_ids = process_list_entities(
-        items=data.get('execution_location'),
-        id_func=lambda loc: get_location_id(
-            loc.get('country'), loc.get('district'), loc.get('municipality')
-        ),
-        linkml_class=Location,
-        linkml_kwargs_func=lambda id, loc: {
-            'id': id,
-            'country': loc.get('country'),
-            'district': loc.get('district'),
-            'municipality': loc.get('municipality'),
-        },
-        dict_builder_func=lambda id, loc: {
-            k: v for k, v in {
-                'id': id,
-                'country': loc.get('country'),
-                'district': loc.get('district'),
-                'municipality': loc.get('municipality'),
-            }.items() if v is not None
-        }
-    )
+    # Build hierarchical location nodes and BROADER relationships
+    # e.g., loc:Portugal/Lisboa/Lisboa -> BROADER -> loc:Portugal/Lisboa -> BROADER -> loc:Portugal
+    
+    location_dicts = []
+    location_ids = []
+    location_broader_rels = []
+    seen_location_ids = set()
+    
+    for loc in (data.get('execution_location') or []):
+        country = loc.get('country')
+        district = loc.get('district')
+        municipality = loc.get('municipality')
+        
+        if not country:
+            continue
+        
+        # Build the hierarchy from most specific to least specific
+        hierarchy = []
+        
+        # Level 1: Country only
+        country_id = get_location_id(country)
+        hierarchy.append({
+            'id': country_id,
+            'country': country,
+        })
+        
+        # Level 2: Country + District
+        if district:
+            district_id = get_location_id(country, district)
+            hierarchy.append({
+                'id': district_id,
+                'country': country,
+                'district': district,
+            })
+        
+        # Level 3: Country + District + Municipality
+        if district and municipality:
+            municipality_id = get_location_id(country, district, municipality)
+            hierarchy.append({
+                'id': municipality_id,
+                'country': country,
+                'district': district,
+                'municipality': municipality,
+            })
+        
+        # Add all hierarchy levels as location nodes (deduplicated)
+        for loc_dict in hierarchy:
+            loc_id = loc_dict['id']
+            if loc_id not in seen_location_ids:
+                seen_location_ids.add(loc_id)
+                # Validate with LinkML
+                Location(**loc_dict)
+                location_dicts.append(loc_dict)
+        
+        # The most specific location is what we link to the contract
+        most_specific_id = hierarchy[-1]['id']
+        if most_specific_id not in location_ids:
+            location_ids.append(most_specific_id)
+        
+        # Create BROADER relationships (child -> parent)
+        for i in range(len(hierarchy) - 1, 0, -1):
+            child_id = hierarchy[i]['id']
+            parent_id = hierarchy[i - 1]['id']
+            location_broader_rels.append(
+                build_relationships_one_to_one('Location', child_id, 'Location', parent_id, 'BROADER')
+            )
 
     # -------------------------------------------------------------------------
     # STEP B: Process DOCUMENTS
@@ -208,6 +253,9 @@ def contracts_mapper(raw_doc: dict) -> dict:
     relationships.extend(build_relationships_one_to_many(
         'Contract', shared_id, 'Location', location_ids, 'EXECUTED_AT_LOCATION'
     ))
+    
+    # Location -> Location (BROADER hierarchy)
+    relationships.extend(location_broader_rels)
     
     # Contract -> Documents
     relationships.extend(build_relationships_one_to_many(

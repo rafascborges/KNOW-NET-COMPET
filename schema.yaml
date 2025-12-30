@@ -1,3 +1,6 @@
+## gen-python schema.yaml > model.py
+## gen-plantuml schema.yaml > schema.puml
+
 id: https://example.org/knownet # change this later to id: https://github.com/myusername/my-project/course-profile
 name: KnownetApplicationProfile
 prefixes:
@@ -155,6 +158,13 @@ classes:
       municipality:
         slot_uri: schema:addressLocality
         range: string
+    
+    slot_usage:
+      BROADER:
+        range: Location
+    # 2. Slots (Object Properties / Links to other classes)
+    slots:
+      - PARTICIPATES_IN
 
   # --- CLASS 4: CPV ---
   CPV:
@@ -179,8 +189,9 @@ classes:
         range: string
    
     # 2. Slots (Object Properties / Links to other classes)
-    slots:
-      - BROADER
+    slot_usage:
+      BROADER:
+        range: CPV
 
   # --- CLASS 5: DOCUMENT
   Document:
@@ -203,7 +214,7 @@ classes:
         slot_uri: schema:description
         range: string
   
-  # --- CLASS 6: ORGANIZATION
+  # --- CLASS 6: ENTITY
   Entity:
     class_uri: org:Organization
     
@@ -226,45 +237,47 @@ classes:
 
     # 2. Slots (Object Properties / Links to other classes)
     slots:
-      - HAS_ROLE
+      #- HAS_ROLE
       - IS_PROCURING_ENTITY_FOR
       - IS_TENDERER_FOR
       - WON_TENDER
       - SIGNED_CONTRACT
       - LOCATED_AT
+      - COMPETED_WITH
   
-  # --- CLASS 7: ROLE
-  Role:
-    class_uri: org:Role
+  # # --- CLASS 7: ROLE
+  # Role:
+  #   class_uri: org:Role
     
-    # 1. Attributes (Data Properties defined locally)
-    attributes:
-      id:
-        identifier: true
-        slot_uri: org:identifier
-        required: true
-        range: string
+  #   # 1. Attributes (Data Properties defined locally)
+  #   attributes:
+  #     id:
+  #       identifier: true
+  #       slot_uri: org:identifier
+  #       required: true
+  #       range: string
 
-      role_name:
-        slot_uri: org:name
-        range: string
+  #     role_name:
+  #       slot_uri: org:name
+  #       range: string
   
-  # --- CLASS 8: TENURE PERIOD
+  # --- CLASS 8: PERIOD
 
-  TenurePeriod:
-    class_uri: org:Membership
-    attributes:
-      start_date:
-        slot_uri: schema:startDate  
-        range: date
+  # Period:
+  #   class_uri: org:Membership
+  #   attributes:
+  #     start_date:
+  #       slot_uri: schema:startDate  
+  #       range: date
 
-      end_date:
-        slot_uri: schema:endDate  
-        range: date
+  #     end_date:
+  #       slot_uri: schema:endDate  
+  #       range: date
     
-    # 2. Slots (Object Properties / Links to other classes)
-    slots:
-      - IN_ROLE
+  #   # 2. Slots (Object Properties / Links to other classes)
+  #   slots:
+  #     - PARLIAMENT_MEMBER
+  #     - GOVERNMENT_MEMBER 
   
   # --- CLASS 9: PERSON
   Person:
@@ -282,12 +295,52 @@ classes:
 
     # 2. Slots (Object Properties / Links to other classes)
     slots:
-      - DURING_PERIOD
       - DIRECTOR_OR_MANAGER_FOR
       - SHAREHOLDER_FOR
+      - PARLIAMENT_MEMBER
+      - GOVERNMENT_MEMBER 
+      # - DURING_PERIOD
+      
+
+    # --- CLASS 10: PARLIAMENT
+  Parliament:
+    class_uri: ext:Parliament
+    attributes:
+      id:
+        identifier: true
+        slot_uri: org:identifier
+        range: string
+
+      start_date:
+        slot_uri: schema:startDate  
+        range: date
+
+      end_date:
+        slot_uri: schema:endDate  
+        range: date
+  
+      # --- CLASS 11: Government
+  Government:
+    class_uri: ext:Government
+    attributes:
+      id:
+        identifier: true
+        slot_uri: org:identifier
+        range: string
+
+      start_date:
+        slot_uri: schema:startDate  
+        range: date
+
+      end_date:
+        slot_uri: schema:endDate  
+        range: date
+
+
 
 # --- GLOBAL SLOTS (Object Properties Only) ---
 slots:
+
   AWARDS_CONTRACT:
     slot_uri: ext:AWARDS_CONTRACT    
     domain: Tender 
@@ -310,8 +363,6 @@ slots:
 
   BROADER:
     slot_uri: skos:BROADER
-    domain: CPV
-    range: CPV
   
   HAS_DOCUMENT:
     slot_uri: ocds:hasDocument
@@ -320,12 +371,12 @@ slots:
     inlined: true
     multivalued: true
 
-  HAS_ROLE:
-    slot_uri: ext:HAS_ROLE
-    domain: Entity
-    range: Role
-    inlined: true
-    multivalued: true
+  # HAS_ROLE:
+  #   slot_uri: ext:HAS_ROLE
+  #   domain: Entity
+  #   range: Role
+  #   inlined: true
+  #   multivalued: true
 
   IS_PROCURING_ENTITY_FOR:
     slot_uri: ocds:IS_PROCURING_ENTITY_FOR
@@ -356,19 +407,31 @@ slots:
     domain: Entity
     range: Location
     inlined: true
-
-  IN_ROLE:
-    slot_uri: org:role
-    domain: TenurePeriod
-    range: Role
-    inlined: true
-
-  DURING_PERIOD:
-    slot_uri: org:member
-    domain: Person 
-    range: TenurePeriod
-    inlined: true
+  
+  COMPETED_WITH:
+    slot_uri: ext:competedWith
+    domain: Entity
+    range: Entity
     multivalued: true
+  
+  PARTICIPATES_IN:
+    slot_uri: ext:participatesIn
+    domain: Location
+    range: Entity
+    multivalued: true
+
+  # IN_ROLE:
+  #   slot_uri: org:role
+  #   domain: TenurePeriod
+  #   range: Role
+  #   inlined: true
+
+  # DURING_PERIOD:
+  #   slot_uri: org:member
+  #   domain: Person 
+  #   range: Period
+  #   inlined: true
+  #   multivalued: true
   
   DIRECTOR_OR_MANAGER_FOR:
     slot_uri: ext:DIRECTOR_OR_MANAGER_FOR
@@ -382,6 +445,17 @@ slots:
     range: Entity
     multivalued: true
 
+  PARLIAMENT_MEMBER: 
+    slot_uri: org:memberOf
+    domain: Person
+    range: Parliament
+    multivalued: false
+  
+  GOVERNMENT_MEMBER:
+    slot_uri: org:memberOf
+    domain: Person
+    range: Government
+    multivalued: false
 
 
 enums: 
@@ -421,5 +495,3 @@ enums:
       - "limited"
       - "selective"
       - "direct"
-## gen-python schema.yaml > model.py
-## gen-plantuml schema.yaml > schema.puml
