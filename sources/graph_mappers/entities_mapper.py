@@ -38,7 +38,7 @@ def entities_mapper(raw_doc: dict) -> dict:
     Returns:
         {
             'entity': [dict],
-            'locations': [dict, ...],
+            'location': [dict, ...],
             'relationships': [dict, ...]
         }
     """
@@ -110,6 +110,6 @@ def entities_mapper(raw_doc: dict) -> dict:
     # -------------------------------------------------------------------------
     return {
         'entity': [entity_dict],
-        'locations': location_dicts,
+        'location': location_dicts,
         'relationships': relationships,
     }

@@ -13,7 +13,7 @@ from sources.lookups.regex_postal_district import REGEX_POSTAL_DISTRICT
 
 POSTAL_RE = re.compile(r"\b\d{4}-\d{0,3}")
 QUEUE_DB = "nifs_scrape_queue"
-TARGET_DB = "nifs_scrape_bronze"
+TARGET_DB = "nifs_scrape_silver"
 
 HEADERS = {
     "User-Agent": (
@@ -55,7 +55,7 @@ class NifScraperSource(BaseDataSource):
 
     Dependencies:
         - Expects a queue database (default: 'nifs_scrape_queue') containing documents with a 'nif' field.
-        - Writes results to a bronze database (default: 'nifs_scrape_bronze').
+        - Writes results to a silver database (default: 'nifs_scrape_silver').
     """
     def __init__(self, db_connector):
         super().__init__(db_connector=db_connector, file_path=None)
@@ -218,7 +218,7 @@ class NifScraperSource(BaseDataSource):
                 
                 # Extract description from search-title span (always update if found)
                 search_title = detail.select_one("span.search-title")
-                if search_title:
+                if search_title and search_title.get_text(strip=True) != "Sem Nome":
                     description = search_title.get_text(strip=True)
 
             if postal_code:

@@ -1,11 +1,14 @@
 # elt_core/graph_loader.py
 import logging
+import os
 import sys
+import time
+import traceback
 from pathlib import Path
-from datetime import datetime
+
 from neo4j import GraphDatabase
 from typing import Callable, Dict, List, Any
-import traceback
+
 from elt_core.neo4j_queries import generate_batch_merge_nodes_query
 from elt_core.neo4j_queries import generate_batch_merge_relationships_query
 
@@ -38,8 +41,9 @@ logging.getLogger('neo4j').setLevel(logging.WARNING)
 logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 
+
 class GraphLoader:
-    def __init__(self, db_connector, neo4j_uri: str, neo4j_auth: tuple, model_module):
+    def __init__(self, db_connector, neo4j_uri: str, neo4j_auth: tuple):
         """
         Initialize GraphLoader with Neo4j driver.
         
@@ -47,15 +51,9 @@ class GraphLoader:
             db_connector: Instance of your custom DBConnector class
             neo4j_uri: Neo4j connection URI (e.g., "bolt://localhost:7687")
             neo4j_auth: Tuple of (username, password)
-            model_module: The imported model.py module for validation
         """
-        # 1. Store the Custom Connector
         self.connector = db_connector
-        
-        # 2. Initialize Neo4j driver
         self.driver = GraphDatabase.driver(neo4j_uri, auth=neo4j_auth)
-        
-        self.model_module = model_module
         self.logger = logging.getLogger("GraphLoader")
         
         # Track validation errors for review
@@ -77,8 +75,6 @@ class GraphLoader:
         Args:
             constraints_file: Path to Cypher file with constraint definitions
         """
-        import os
-        from pathlib import Path
         
         # Find constraints file
         if not os.path.isabs(constraints_file):
@@ -110,7 +106,6 @@ class GraphLoader:
         
         # Execute each constraint
         constraints_created = 0
-        constraints_existed = 0
         
         with self.driver.session() as session:
             for statement in statements:
@@ -125,7 +120,7 @@ class GraphLoader:
                 except Exception as e:
                     error_msg = str(e)
                     if 'already exists' in error_msg.lower() or 'equivalent' in error_msg.lower():
-                        constraints_existed += 1
+                        
                         self.logger.debug(f"  → Constraint already exists (skipped)")
                     else:
                         self.logger.warning(f"  ✗ Failed to create constraint: {error_msg}")
@@ -143,7 +138,6 @@ class GraphLoader:
             doc_mapper_func: Function that maps raw docs to graph entities
             batch_size: Number of documents to process in each batch (default: 1000)
         """
-        import time
         
         # A. FETCH: Use your custom connector to get the list of dicts
         self.logger.info(f"Fetching all documents from {couch_db_name}...")
@@ -310,19 +304,12 @@ class GraphLoader:
             if not unique_items:
                 continue
             
-            # Map alias to Neo4j label
-            label_map = {
-                'tenders': 'Tender',
-                'contracts': 'Contract',
-                'locations': 'Location',
-                'documents': 'Document',
-                'cpvs': 'CPV',
-                'contracted_entities': 'Entity',
-                'contestant_entities': 'Entity',
-                'procuring_entities': 'Entity'
-            }
-            
-            label = label_map.get(entity_type, entity_type.capitalize())
+            # Get label
+            # Check if first letter is already capitalized
+            if entity_type[0].isupper():
+                label = entity_type
+            else:
+                label = entity_type.capitalize()
             
             # Generate batch query
             try:
@@ -368,7 +355,6 @@ class GraphLoader:
         Returns:
             Total number of relationships created
         """
-        
         
         if not relationships:
             return 0

@@ -45,6 +45,14 @@ class OrbisDMSource(BaseDataSource):
         df['DMAppointment date'] = pd.to_datetime(df['DMAppointment date'], unit='D', origin='1899-12-30').dt.strftime('%Y-%m-%d')
         df['DMResignation date'] = pd.to_datetime(df['DMResignation date'], unit='D', origin='1899-12-30').dt.strftime('%Y-%m-%d')
         self.logger.info(f"Fixed datetime columns for {len(df)} records.")
+
+        # NORMALIZE NAME 
+        df['DMFull name'] = df['DMFull name'].str.upper()
+
+        # Remove Mr and Ms from DMFull name
+        df['DMFull name'] = df['DMFull name'].str.replace('MR ', '').str.replace('MRS ', '').str.replace('MS ', '').str.replace('DR ', '')
+
+        
         
         return to_dict(df)
 
