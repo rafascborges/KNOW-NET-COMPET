@@ -5,13 +5,13 @@ Contract mapper using declarative configuration.
 Maps raw contract documents from CouchDB to validated graph entities
 (nodes and relationships) for loading into Neo4j.
 """
-from model import Tender, Contract, Location, CPV, Document, Entity
+from model import Tender, Contract, Location, CPV, Document
 
 from sources.graph_mappers.mapper_utils import (
     get_location_id,
     get_document_url,
+    parse_date,
     process_list_entities,
-    process_simple_entities,
     build_node_dict,
     build_relationships_one_to_one,
     build_relationships_one_to_many,
@@ -57,14 +57,11 @@ def contracts_mapper(raw_doc: dict) -> dict:
     
     Returns:
         {
-            'tenders': [dict],
-            'contracts': [dict],
-            'locations': [dict, ...],
-            'documents': [dict, ...],
-            'cpvs': [dict, ...],
-            'contracted_entities': [dict, ...],  # Winners
-            'contestant_entities': [dict, ...],  # Tenderers
-            'procuring_entities': [dict, ...]    # Contracting agencies
+            'tender': [dict],
+            'contract': [dict],
+            'location': [dict, ...],
+            'document': [dict, ...],
+            'cpv': [dict, ...],
             'relationships': [dict, ...]         # Explicit relationships
         }
     """
@@ -165,45 +162,30 @@ def contracts_mapper(raw_doc: dict) -> dict:
     )
 
     # -------------------------------------------------------------------------
-    # STEP C: Process CPVs
+    # STEP C: Process CPVs (IDs only - nodes come from cpv_mapper)
     # -------------------------------------------------------------------------
-    cpv_dicts, cpv_ids = process_list_entities(
-        items=data.get('cpvs'),
-        id_func=lambda cpv: str(cpv) if cpv else None,
-        linkml_class=CPV,
-        linkml_kwargs_func=lambda id, cpv: {
-            'id': id,
-            'label': f"CPV {id}",
-            'level': "division",
-        },
-        dict_builder_func=lambda id, cpv: {
-            'id': id,
-            'label': f"CPV {id}",
-            'level': "division",
-        }
-    )
+    # Only collect IDs for Contract -> CPV relationships
+    # Actual CPV nodes with real labels/levels are created by cpv_mapper from cpv_structure_silver
+    cpv_ids = [str(cpv) for cpv in (data.get('cpvs') or []) if cpv]
+    cpv_dicts = []  # Don't create CPV nodes here
 
     # -------------------------------------------------------------------------
-    # STEP D: Process ENTITIES (separated by role)
+    # STEP D: Collect ENTITY IDs for relationships
     # -------------------------------------------------------------------------
-    # Contracted entities (winners)
-    contracted_entity_dicts, contracted_entity_ids = process_simple_entities(
-        vats=data.get('contracted_vats'),
-        linkml_class=Entity,
-    )
+    # NOTE: We only collect IDs here, NOT create Entity nodes.
+    # Entity nodes with full properties are created by entities_mapper.
+    # Creating {'id': vat} here would cause SET n = item to wipe existing properties.
     
-    # Contestant entities (tenderers) - skip if already in contracted
-    contestant_entity_dicts, contestant_entity_ids = process_simple_entities(
-        vats=data.get('contestants_vats'),
-        linkml_class=Entity,
-        skip_if_in=set(contracted_entity_ids),
-    )
+    # Contracted entities (winners)
+    contracted_entity_ids = [vat for vat in (data.get('contracted_vats') or []) if vat]
+    
+    # Contestant entities (tenderers) - deduplicate against contracted
+    contracted_set = set(contracted_entity_ids)
+    contestant_entity_ids = [vat for vat in (data.get('contestants_vats') or []) if vat and vat not in contracted_set]
     
     # Procuring entities (contracting agencies)
-    procuring_entity_dicts, procuring_entity_ids = process_simple_entities(
-        vats=data.get('contracting_agency_vats'),
-        linkml_class=Entity,
-    )
+    procuring_entity_ids = [vat for vat in (data.get('contracting_agency_vats') or []) if vat]
+
 
     # -------------------------------------------------------------------------
     # STEP E: Build and Validate CONTRACT
@@ -222,6 +204,8 @@ def contracts_mapper(raw_doc: dict) -> dict:
         HAS_DOCUMENT=document_dicts,
     )
     contract_dict = build_node_dict(shared_id, data, CONTRACT_FIELDS)
+    # Convert signing_date to native date
+    contract_dict['signing_date'] = parse_date(data.get('signing_date'))
 
     # -------------------------------------------------------------------------
     # STEP F: Build and Validate TENDER
@@ -238,6 +222,9 @@ def contracts_mapper(raw_doc: dict) -> dict:
         AWARDS_CONTRACT=shared_id,
     )
     tender_dict = build_node_dict(shared_id, data, TENDER_FIELDS)
+    # Convert date fields to native dates
+    tender_dict['publication_date'] = parse_date(data.get('publication_date'))
+    tender_dict['close_date'] = parse_date(data.get('close_date'))
 
     # -------------------------------------------------------------------------
     # STEP G: Build RELATIONSHIPS
@@ -288,16 +275,13 @@ def contracts_mapper(raw_doc: dict) -> dict:
     ))
 
     # -------------------------------------------------------------------------
-    # RETURN
+    # RETURN 
     # -------------------------------------------------------------------------
     return {
-        "tenders": [tender_dict],
-        "contracts": [contract_dict],
-        "locations": location_dicts,
-        "documents": document_dicts,
-        "cpvs": cpv_dicts,
-        "contracted_entities": contracted_entity_dicts,
-        "contestant_entities": contestant_entity_dicts,
-        "procuring_entities": procuring_entity_dicts,
+        "tender": [tender_dict],
+        "contract": [contract_dict],
+        "location": location_dicts,
+        "document": document_dicts,
+        "CPV": cpv_dicts,
         "relationships": relationships,
     }

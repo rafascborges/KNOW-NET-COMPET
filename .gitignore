@@ -17,3 +17,4 @@ pipeline.log
 data/
 docs/
 logs/
+.agent/ 

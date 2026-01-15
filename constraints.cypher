@@ -30,11 +30,6 @@ CREATE CONSTRAINT Entity_id_unique IF NOT EXISTS
 FOR (n:`Entity`)
 REQUIRE n.`id` IS UNIQUE;
 
-// Unique constraint for class: Role
-CREATE CONSTRAINT Role_id_unique IF NOT EXISTS
-FOR (n:`Role`)
-REQUIRE n.`id` IS UNIQUE;
-
 // Unique constraint for class: Person
 CREATE CONSTRAINT Person_id_unique IF NOT EXISTS
 FOR (n:`Person`)

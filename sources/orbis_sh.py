@@ -1,5 +1,6 @@
 from elt_core.base_source import BaseDataSource
 from elt_core.transformations import to_dataframe, to_dict, propagate_company_vat, clean_vat, rename_columns
+from elt_core.transformations import normalize_name
 
 class OrbisSHSource(BaseDataSource):
     source_name = "orbis_sh"
@@ -20,6 +21,7 @@ class OrbisSHSource(BaseDataSource):
         self.GROUP_COLUMN = "company_name"
         self.VAT_COLUMN = "VAT" 
         self.UCI_COLUMN = "UCI"
+        self.NAME_COLUMN = "SH - Name"
         
         # Propagate VAT
         df = propagate_company_vat(
@@ -35,6 +37,11 @@ class OrbisSHSource(BaseDataSource):
             vat_col=self.VAT_COLUMN, 
             logger=self.logger
         )
+
+        # NORMALIZE NAME 
+        df[self.NAME_COLUMN] = normalize_name(df[self.NAME_COLUMN])
+
+        
         
         return to_dict(df)
 

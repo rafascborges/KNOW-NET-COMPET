@@ -384,3 +384,37 @@ def clean_vat(df: pd.DataFrame, vat_col: str, logger: Optional[logging.Logger] =
     
     _log_step(logger, f"Clean VAT {vat_col}", initial_count, len(df))
     return df
+
+
+def normalize_name(series: pd.Series) -> pd.Series:
+    """
+    Normalize a name series by:
+    1. Converting to uppercase
+    2. Removing accents/diacritics (ç -> C, ã -> A, etc.)
+    3. Removing common prefixes (MR, MRS, MS, DR)
+
+    Args:
+        series: A pandas Series containing names
+
+    Returns:
+        A pandas Series with normalized names
+    """
+    import unicodedata
+    
+    def remove_accents(text):
+        if pd.isna(text):
+            return text
+        # NFD decomposes characters (e.g., 'ã' -> 'a' + combining tilde)
+        # Then we filter out the combining marks (category 'Mn')
+        normalized = unicodedata.normalize('NFD', str(text))
+        return ''.join(c for c in normalized if unicodedata.category(c) != 'Mn')
+    
+    result = series.apply(remove_accents)
+    result = result.str.upper()
+    result = (
+        result.str.replace('MR ', '', regex=False)
+        .str.replace('MRS ', '', regex=False)
+        .str.replace('MS ', '', regex=False)
+        .str.replace('DR ', '', regex=False)
+    )
+    return result

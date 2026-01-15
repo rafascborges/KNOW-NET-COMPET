@@ -56,16 +56,22 @@ class OrbisGoldSource(BaseDataSource):
             elif sh_entry and sh_entry['name']:
                 final_name = sh_entry['name']
 
-            # Get VAT lists
-            dm_vats = list(dm_entry['vats']) if dm_entry else []
-            sh_vats = list(sh_entry['vats']) if sh_entry else []
+            # Build associated list with {nif, role} objects
+            associated = []
+            
+            if dm_entry:
+                for nif in dm_entry['vats']:
+                    associated.append({"nif": nif, "role": "dm"})
+            
+            if sh_entry:
+                for nif in sh_entry['vats']:
+                    associated.append({"nif": nif, "role": "sh"})
 
             doc = {
                 "_id": uci,
                 "id": uci,
                 "name": final_name,
-                "dm": dm_vats,
-                "sh": sh_vats
+                "associated": associated
             }
             gold_docs.append(doc)
 

@@ -87,6 +87,6 @@ def cpv_mapper(raw_doc: dict) -> dict:
     # RETURN
     # -------------------------------------------------------------------------
     return {
-        'cpvs': [cpv_dict],
+        'CPV': [cpv_dict],
         'relationships': relationships,
     }

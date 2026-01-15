@@ -9,8 +9,8 @@ services:
       COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
       COUCHDB_SECRET: ${COUCHDB_SECRET}
     volumes:
-      - couchdb_data:/opt/couchdb/data
-
+      # Direct Bind Mount
+      - ${DATA_ROOT}/CouchDB/couchdb-data:/opt/couchdb/data
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:5984/_up" ]
       interval: 10s
@@ -23,8 +23,8 @@ services:
     container_name: neo4j
     restart: unless-stopped
     ports:
-      - "127.0.0.1:7474:7474"
-      - "127.0.0.1:7687:7687"
+      - "7474:7474"
+      - "7687:7687"
     environment:
       NEO4J_AUTH: none
       NEO4J_PLUGINS: '["apoc","graph-data-science"]'
@@ -33,14 +33,14 @@ services:
       NEO4J_server_directories_import: "/import"
       NEO4J_dbms_security_procedures_unrestricted: "apoc.*,gds.*"
     volumes:
-      - neo4j-data:/data
-      - neo4j-logs:/logs
-      - neo4j-import:/import
-      # - neo4j-plugins:/plugins
-      - neo4j-backups:/backups
+      # Direct Bind Mounts using your NVME path
+      - ${DATA_ROOT}/Neo4j/neo4j-data:/data
+      - ${DATA_ROOT}/Neo4j/neo4j-logs:/logs
+      - ${DATA_ROOT}/Neo4j/neo4j-import:/import
+      - ${DATA_ROOT}/Neo4j/neo4j-backups:/backups
 
   neodash:
-    image: neo4jlabs/neodash:latest
+    image: neo4jlabs/neodash:2.4.11
     container_name: neodash
     ports:
       - "5005:5005"
@@ -48,43 +48,4 @@ services:
     depends_on:
       - neo4j
 
-volumes:
-  couchdb_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${DATA_ROOT}/CouchDB/couchdb-data
-
-  neo4j-data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${DATA_ROOT}/Neo4j/neo4j-data
-  neo4j-logs:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${DATA_ROOT}/Neo4j/neo4j-logs
-  neo4j-import:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${DATA_ROOT}/Neo4j/neo4j-import
-
-  # neo4j-plugins:
-  #   driver: local
-  #   driver_opts:
-  #     type: none
-  #     o: bind
-  #     device: ${DATA_ROOT}/plugins
-
-  neo4j-backups:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${DATA_ROOT}/Neo4j/neo4j-backups
+# NOTE: The top-level volumes block is now empty/removed

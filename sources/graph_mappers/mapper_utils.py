@@ -7,8 +7,34 @@ Provides reusable functions for:
 - Building node dicts from field mappings
 - Generating relationship dicts from declarative configs
 """
+from datetime import date
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 from slugify import slugify
+
+
+def parse_date(value: str) -> date | None:
+    """
+    Convert ISO datetime/date string to Python date for Neo4j.
+    
+    The Neo4j Python driver automatically converts Python date objects
+    to Neo4j native date type.
+    
+    Args:
+        value: ISO format datetime string (e.g., "2024-01-15T10:30:00" or "2024-01-15")
+        
+    Returns:
+        Python date object, or None if value is empty/invalid
+    """
+    if not value:
+        return None
+    try:
+        # Handle full datetime format (take just the date part)
+        if 'T' in value:
+            value = value.split('T')[0]
+        # Parse YYYY-MM-DD
+        return date.fromisoformat(value)
+    except (ValueError, TypeError, AttributeError):
+        return None
 
 
 def get_location_id(country: str, district: Optional[str] = None, municipality: Optional[str] = None) -> str:
@@ -73,40 +99,6 @@ def process_list_entities(
     return result_dicts, result_ids
 
 
-def process_simple_entities(
-    vats: Optional[List[str]],
-    linkml_class: Type,
-    skip_if_in: Optional[set] = None
-) -> Tuple[List[Dict], List[str]]:
-    """
-    Process a simple list of IDs (like VATs) into validated dicts.
-    
-    Args:
-        vats: List of VAT/ID strings
-        linkml_class: LinkML class for validation
-        skip_if_in: Optional set of IDs to skip
-        
-    Returns:
-        Tuple of (list of dicts, list of IDs)
-    """
-    result_dicts = []
-    result_ids = []
-    
-    for vat in (vats or []):
-        if not vat:
-            continue
-        if skip_if_in and vat in skip_if_in:
-            continue
-            
-        # Validate with LinkML
-        linkml_class(id=vat)
-        
-        result_dicts.append({'id': vat})
-        result_ids.append(vat)
-    
-    return result_dicts, result_ids
-
-
 def build_node_dict(
     node_id: str,
     data: Dict,
@@ -136,16 +128,20 @@ def build_relationships_one_to_one(
     from_id: str,
     to_label: str,
     to_id: str,
-    rel_type: str
+    rel_type: str,
+    properties: Optional[Dict[str, Any]] = None
 ) -> Dict:
-    """Build a single relationship dict."""
-    return {
+    """Build a single relationship dict with optional properties."""
+    result = {
         'from_label': from_label,
         'from_id': from_id,
         'to_label': to_label,
         'to_id': to_id,
         'rel_type': rel_type
     }
+    if properties:
+        result['properties'] = properties
+    return result
 
 
 def build_relationships_one_to_many(
@@ -153,11 +149,12 @@ def build_relationships_one_to_many(
     from_id: str,
     to_label: str,
     to_ids: List[str],
-    rel_type: str
+    rel_type: str,
+    properties: Optional[Dict[str, Any]] = None
 ) -> List[Dict]:
     """Build relationship dicts from one node to many target nodes."""
     return [
-        build_relationships_one_to_one(from_label, from_id, to_label, to_id, rel_type)
+        build_relationships_one_to_one(from_label, from_id, to_label, to_id, rel_type, properties)
         for to_id in to_ids
     ]
 
@@ -167,10 +164,14 @@ def build_relationships_many_to_one(
     from_ids: List[str],
     to_label: str,
     to_id: str,
-    rel_type: str
+    rel_type: str,
+    properties: Optional[Dict[str, Any]] = None
 ) -> List[Dict]:
     """Build relationship dicts from many nodes to one target node."""
     return [
-        build_relationships_one_to_one(from_label, from_id, to_label, to_id, rel_type)
+        build_relationships_one_to_one(from_label, from_id, to_label, to_id, rel_type, properties)
         for from_id in from_ids
     ]
+
+
+

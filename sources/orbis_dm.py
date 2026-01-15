@@ -1,6 +1,7 @@
 from elt_core.base_source import BaseDataSource
 from elt_core.transformations import to_dataframe, to_dict, propagate_company_vat, clean_vat, rename_columns
 import pandas as pd
+from elt_core.transformations import normalize_name
 
 class OrbisDMSource(BaseDataSource):
     source_name = "orbis_dm"
@@ -23,6 +24,7 @@ class OrbisDMSource(BaseDataSource):
         self.GROUP_COLUMN = "company_name"
         self.VAT_COLUMN = "VAT" 
         self.UCI_COLUMN = "UCI"
+        self.NAME_COLUMN = "DMFull name"    
         
         # Propagate VAT
         df = propagate_company_vat(
@@ -47,10 +49,7 @@ class OrbisDMSource(BaseDataSource):
         self.logger.info(f"Fixed datetime columns for {len(df)} records.")
 
         # NORMALIZE NAME 
-        df['DMFull name'] = df['DMFull name'].str.upper()
-
-        # Remove Mr and Ms from DMFull name
-        df['DMFull name'] = df['DMFull name'].str.replace('MR ', '').str.replace('MRS ', '').str.replace('MS ', '').str.replace('DR ', '')
+        df[self.NAME_COLUMN] = normalize_name(df[self.NAME_COLUMN])
 
         
         

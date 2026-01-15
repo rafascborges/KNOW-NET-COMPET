@@ -9,7 +9,7 @@ from model import Person
 
 from sources.graph_mappers.mapper_utils import (
     build_node_dict,
-    build_relationships_one_to_many,
+    build_relationships_one_to_one,
 )
 
 
@@ -33,10 +33,17 @@ def orbis_mapper(raw_doc: dict) -> dict:
     
     Uses LinkML for validation - if validation passes, works with dicts directly.
     
+    Input format:
+        {
+            "id": "C018582838",
+            "name": "David Assuncao Dias",
+            "associated": [{"nif": "501819398", "role": "dm"}, {"nif": "73473456", "role": "sh"}]
+        }
+    
     Returns:
         {
-            'persons': [dict],
-            'relationships': [dict, ...]  # DIRECTOR_OR_MANAGER_FOR, SHAREHOLDER_FOR
+            'person': [dict],
+            'relationships': [dict, ...]  # ASSOCIATED_WITH (with role property)
         }
     """
     
@@ -44,8 +51,10 @@ def orbis_mapper(raw_doc: dict) -> dict:
     data = {k: v for k, v in raw_doc.items() if not k.startswith('_')}
     
     person_id = data.get('id')
-    dm_entities = data.get('dm') or []  # Director/Manager entities
-    sh_entities = data.get('sh') or []  # Shareholder entities
+    associated = data.get('associated') or []
+    
+    # Extract all entity IDs for LinkML validation
+    entity_ids = [a['nif'] for a in associated if a.get('nif')]
     
     # -------------------------------------------------------------------------
     # STEP A: Build and Validate PERSON
@@ -53,32 +62,31 @@ def orbis_mapper(raw_doc: dict) -> dict:
     Person(
         id=person_id,
         person_name=data.get('name'),
-        DIRECTOR_OR_MANAGER_FOR=dm_entities,
-        SHAREHOLDER_FOR=sh_entities,
+        ASSOCIATED_WITH=entity_ids,
     )
     
     # Build person dict
     person_dict = build_node_dict(person_id, data, PERSON_FIELDS)
     
     # -------------------------------------------------------------------------
-    # STEP B: Build RELATIONSHIPS
+    # STEP B: Build RELATIONSHIPS with role property
     # -------------------------------------------------------------------------
     relationships = []
     
-    # Person -> Entity (DIRECTOR_OR_MANAGER_FOR)
-    relationships.extend(build_relationships_one_to_many(
-        'Person', person_id, 'Entity', dm_entities, 'DIRECTOR_OR_MANAGER_FOR'
-    ))
-    
-    # Person -> Entity (SHAREHOLDER_FOR)
-    relationships.extend(build_relationships_one_to_many(
-        'Person', person_id, 'Entity', sh_entities, 'SHAREHOLDER_FOR'
-    ))
+    # Person -> Entity (ASSOCIATED_WITH) with role property
+    for assoc in associated:
+        nif = assoc.get('nif')
+        role = assoc.get('role')
+        if nif and role:
+            relationships.append(build_relationships_one_to_one(
+                'Person', person_id, 'Entity', nif, 'ASSOCIATED_WITH',
+                properties={'role': role}
+            ))
     
     # -------------------------------------------------------------------------
     # RETURN
     # -------------------------------------------------------------------------
     return {
-        'persons': [person_dict],
+        'person': [person_dict],
         'relationships': relationships,
     }

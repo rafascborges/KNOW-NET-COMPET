@@ -1,5 +1,5 @@
 # Auto generated from schema.yaml by pythongen.py version: 0.0.1
-# Generation date: 2025-12-28T17:40:58
+# Generation date: 2026-01-12T10:31:31
 # Schema: KnownetApplicationProfile
 #
 # id: https://example.org/knownet
@@ -56,8 +56,8 @@ from rdflib import (
     URIRef
 )
 
-from linkml_runtime.linkml_model.types import Boolean, Date, Datetime, Float, Integer, String
-from linkml_runtime.utils.metamodelcore import Bool, XSDDate, XSDDateTime
+from linkml_runtime.linkml_model.types import Boolean, Datetime, Float, Integer, String
+from linkml_runtime.utils.metamodelcore import Bool, XSDDateTime
 
 metamodel_version = "1.7.0"
 version = None
@@ -100,10 +100,6 @@ class DocumentId(extended_str):
 
 
 class EntityId(extended_str):
-    pass
-
-
-class RoleId(extended_str):
     pass
 
 
@@ -254,8 +250,10 @@ class Location(YAMLRoot):
 
     id: Union[str, LocationId] = None
     country: str = None
+    ADMINISTERED_BY: Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]] = empty_list()
     district: Optional[str] = None
     municipality: Optional[str] = None
+    BROADER: Optional[Union[str, LocationId]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.id):
@@ -268,11 +266,18 @@ class Location(YAMLRoot):
         if not isinstance(self.country, str):
             self.country = str(self.country)
 
+        if not isinstance(self.ADMINISTERED_BY, list):
+            self.ADMINISTERED_BY = [self.ADMINISTERED_BY] if self.ADMINISTERED_BY is not None else []
+        self.ADMINISTERED_BY = [v if isinstance(v, EntityId) else EntityId(v) for v in self.ADMINISTERED_BY]
+
         if self.district is not None and not isinstance(self.district, str):
             self.district = str(self.district)
 
         if self.municipality is not None and not isinstance(self.municipality, str):
             self.municipality = str(self.municipality)
+
+        if self.BROADER is not None and not isinstance(self.BROADER, LocationId):
+            self.BROADER = LocationId(self.BROADER)
 
         super().__post_init__(**kwargs)
 
@@ -353,12 +358,13 @@ class Entity(YAMLRoot):
     class_model_uri: ClassVar[URIRef] = DATA.Entity
 
     id: Union[str, EntityId] = None
-    HAS_ROLE: Optional[Union[dict[Union[str, RoleId], Union[dict, "Role"]], list[Union[dict, "Role"]]]] = empty_dict()
     IS_PROCURING_ENTITY_FOR: Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]] = empty_list()
     IS_TENDERER_FOR: Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]] = empty_list()
     WON_TENDER: Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]] = empty_list()
     SIGNED_CONTRACT: Optional[Union[Union[str, ContractId], list[Union[str, ContractId]]]] = empty_list()
     LOCATED_AT: Optional[Union[dict, Location]] = None
+    COMPETED_WITH: Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]] = empty_list()
+    SHAREHOLDER_OF: Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]] = empty_list()
     entity_name: Optional[str] = None
     valid_nif: Optional[Union[bool, Bool]] = None
 
@@ -367,8 +373,6 @@ class Entity(YAMLRoot):
             self.MissingRequiredField("id")
         if not isinstance(self.id, EntityId):
             self.id = EntityId(self.id)
-
-        self._normalize_inlined_as_dict(slot_name="HAS_ROLE", slot_type=Role, key_name="id", keyed=True)
 
         if not isinstance(self.IS_PROCURING_ENTITY_FOR, list):
             self.IS_PROCURING_ENTITY_FOR = [self.IS_PROCURING_ENTITY_FOR] if self.IS_PROCURING_ENTITY_FOR is not None else []
@@ -389,61 +393,19 @@ class Entity(YAMLRoot):
         if self.LOCATED_AT is not None and not isinstance(self.LOCATED_AT, Location):
             self.LOCATED_AT = Location(**as_dict(self.LOCATED_AT))
 
+        if not isinstance(self.COMPETED_WITH, list):
+            self.COMPETED_WITH = [self.COMPETED_WITH] if self.COMPETED_WITH is not None else []
+        self.COMPETED_WITH = [v if isinstance(v, EntityId) else EntityId(v) for v in self.COMPETED_WITH]
+
+        if not isinstance(self.SHAREHOLDER_OF, list):
+            self.SHAREHOLDER_OF = [self.SHAREHOLDER_OF] if self.SHAREHOLDER_OF is not None else []
+        self.SHAREHOLDER_OF = [v if isinstance(v, EntityId) else EntityId(v) for v in self.SHAREHOLDER_OF]
+
         if self.entity_name is not None and not isinstance(self.entity_name, str):
             self.entity_name = str(self.entity_name)
 
         if self.valid_nif is not None and not isinstance(self.valid_nif, Bool):
             self.valid_nif = Bool(self.valid_nif)
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class Role(YAMLRoot):
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = ORG["Role"]
-    class_class_curie: ClassVar[str] = "org:Role"
-    class_name: ClassVar[str] = "Role"
-    class_model_uri: ClassVar[URIRef] = DATA.Role
-
-    id: Union[str, RoleId] = None
-    role_name: Optional[str] = None
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.id):
-            self.MissingRequiredField("id")
-        if not isinstance(self.id, RoleId):
-            self.id = RoleId(self.id)
-
-        if self.role_name is not None and not isinstance(self.role_name, str):
-            self.role_name = str(self.role_name)
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class TenurePeriod(YAMLRoot):
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = ORG["Membership"]
-    class_class_curie: ClassVar[str] = "org:Membership"
-    class_name: ClassVar[str] = "TenurePeriod"
-    class_model_uri: ClassVar[URIRef] = DATA.TenurePeriod
-
-    IN_ROLE: Optional[Union[dict, Role]] = None
-    start_date: Optional[Union[str, XSDDate]] = None
-    end_date: Optional[Union[str, XSDDate]] = None
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        if self.IN_ROLE is not None and not isinstance(self.IN_ROLE, Role):
-            self.IN_ROLE = Role(**as_dict(self.IN_ROLE))
-
-        if self.start_date is not None and not isinstance(self.start_date, XSDDate):
-            self.start_date = XSDDate(self.start_date)
-
-        if self.end_date is not None and not isinstance(self.end_date, XSDDate):
-            self.end_date = XSDDate(self.end_date)
 
         super().__post_init__(**kwargs)
 
@@ -458,10 +420,9 @@ class Person(YAMLRoot):
     class_model_uri: ClassVar[URIRef] = DATA.Person
 
     id: Union[str, PersonId] = None
-    DURING_PERIOD: Optional[Union[Union[dict, TenurePeriod], list[Union[dict, TenurePeriod]]]] = empty_list()
-    DIRECTOR_OR_MANAGER_FOR: Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]] = empty_list()
-    SHAREHOLDER_FOR: Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]] = empty_list()
+    ASSOCIATED_WITH: Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]] = empty_list()
     person_name: Optional[str] = None
+    pep: Optional[Union[bool, Bool]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.id):
@@ -469,20 +430,15 @@ class Person(YAMLRoot):
         if not isinstance(self.id, PersonId):
             self.id = PersonId(self.id)
 
-        if not isinstance(self.DURING_PERIOD, list):
-            self.DURING_PERIOD = [self.DURING_PERIOD] if self.DURING_PERIOD is not None else []
-        self.DURING_PERIOD = [v if isinstance(v, TenurePeriod) else TenurePeriod(**as_dict(v)) for v in self.DURING_PERIOD]
-
-        if not isinstance(self.DIRECTOR_OR_MANAGER_FOR, list):
-            self.DIRECTOR_OR_MANAGER_FOR = [self.DIRECTOR_OR_MANAGER_FOR] if self.DIRECTOR_OR_MANAGER_FOR is not None else []
-        self.DIRECTOR_OR_MANAGER_FOR = [v if isinstance(v, EntityId) else EntityId(v) for v in self.DIRECTOR_OR_MANAGER_FOR]
-
-        if not isinstance(self.SHAREHOLDER_FOR, list):
-            self.SHAREHOLDER_FOR = [self.SHAREHOLDER_FOR] if self.SHAREHOLDER_FOR is not None else []
-        self.SHAREHOLDER_FOR = [v if isinstance(v, EntityId) else EntityId(v) for v in self.SHAREHOLDER_FOR]
+        if not isinstance(self.ASSOCIATED_WITH, list):
+            self.ASSOCIATED_WITH = [self.ASSOCIATED_WITH] if self.ASSOCIATED_WITH is not None else []
+        self.ASSOCIATED_WITH = [v if isinstance(v, EntityId) else EntityId(v) for v in self.ASSOCIATED_WITH]
 
         if self.person_name is not None and not isinstance(self.person_name, str):
             self.person_name = str(self.person_name)
+
+        if self.pep is not None and not isinstance(self.pep, Bool):
+            self.pep = Bool(self.pep)
 
         super().__post_init__(**kwargs)
 
@@ -579,13 +535,10 @@ slots.HAS_CPV_CLASSIFICATION = Slot(uri=OCDS.HAS_CPV_CLASSIFICATION, name="HAS_C
                    model_uri=DATA.HAS_CPV_CLASSIFICATION, domain=Contract, range=Optional[Union[Union[str, CPVId], list[Union[str, CPVId]]]])
 
 slots.BROADER = Slot(uri=SKOS.BROADER, name="BROADER", curie=SKOS.curie('BROADER'),
-                   model_uri=DATA.BROADER, domain=CPV, range=Optional[Union[str, CPVId]])
+                   model_uri=DATA.BROADER, domain=None, range=Optional[str])
 
 slots.HAS_DOCUMENT = Slot(uri=OCDS.hasDocument, name="HAS_DOCUMENT", curie=OCDS.curie('hasDocument'),
                    model_uri=DATA.HAS_DOCUMENT, domain=Contract, range=Optional[Union[dict[Union[str, DocumentId], Union[dict, "Document"]], list[Union[dict, "Document"]]]])
-
-slots.HAS_ROLE = Slot(uri=EXT.HAS_ROLE, name="HAS_ROLE", curie=EXT.curie('HAS_ROLE'),
-                   model_uri=DATA.HAS_ROLE, domain=Entity, range=Optional[Union[dict[Union[str, RoleId], Union[dict, "Role"]], list[Union[dict, "Role"]]]])
 
 slots.IS_PROCURING_ENTITY_FOR = Slot(uri=OCDS.IS_PROCURING_ENTITY_FOR, name="IS_PROCURING_ENTITY_FOR", curie=OCDS.curie('IS_PROCURING_ENTITY_FOR'),
                    model_uri=DATA.IS_PROCURING_ENTITY_FOR, domain=Entity, range=Optional[Union[Union[str, TenderId], list[Union[str, TenderId]]]])
@@ -602,17 +555,17 @@ slots.SIGNED_CONTRACT = Slot(uri=OCDS.isSignatoryForContract, name="SIGNED_CONTR
 slots.LOCATED_AT = Slot(uri=SCHEMA.location, name="LOCATED_AT", curie=SCHEMA.curie('location'),
                    model_uri=DATA.LOCATED_AT, domain=Entity, range=Optional[Union[dict, Location]])
 
-slots.IN_ROLE = Slot(uri=ORG.role, name="IN_ROLE", curie=ORG.curie('role'),
-                   model_uri=DATA.IN_ROLE, domain=TenurePeriod, range=Optional[Union[dict, Role]])
+slots.COMPETED_WITH = Slot(uri=EXT.competedWith, name="COMPETED_WITH", curie=EXT.curie('competedWith'),
+                   model_uri=DATA.COMPETED_WITH, domain=Entity, range=Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]])
 
-slots.DURING_PERIOD = Slot(uri=ORG.member, name="DURING_PERIOD", curie=ORG.curie('member'),
-                   model_uri=DATA.DURING_PERIOD, domain=Person, range=Optional[Union[Union[dict, TenurePeriod], list[Union[dict, TenurePeriod]]]])
+slots.SHAREHOLDER_OF = Slot(uri=EXT.shareholderOf, name="SHAREHOLDER_OF", curie=EXT.curie('shareholderOf'),
+                   model_uri=DATA.SHAREHOLDER_OF, domain=Entity, range=Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]])
 
-slots.DIRECTOR_OR_MANAGER_FOR = Slot(uri=EXT.DIRECTOR_OR_MANAGER_FOR, name="DIRECTOR_OR_MANAGER_FOR", curie=EXT.curie('DIRECTOR_OR_MANAGER_FOR'),
-                   model_uri=DATA.DIRECTOR_OR_MANAGER_FOR, domain=Person, range=Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]])
+slots.ADMINISTERED_BY = Slot(uri=EXT.administeredBy, name="ADMINISTERED_BY", curie=EXT.curie('administeredBy'),
+                   model_uri=DATA.ADMINISTERED_BY, domain=Location, range=Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]])
 
-slots.SHAREHOLDER_FOR = Slot(uri=EXT.SHAREHOLDER_FOR, name="SHAREHOLDER_FOR", curie=EXT.curie('SHAREHOLDER_FOR'),
-                   model_uri=DATA.SHAREHOLDER_FOR, domain=Person, range=Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]])
+slots.ASSOCIATED_WITH = Slot(uri=EXT.ASSOCIATED_WITH, name="ASSOCIATED_WITH", curie=EXT.curie('ASSOCIATED_WITH'),
+                   model_uri=DATA.ASSOCIATED_WITH, domain=Person, range=Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]])
 
 slots.contract__id = Slot(uri=OCDS.contractId, name="contract__id", curie=OCDS.curie('contractId'),
                    model_uri=DATA.contract__id, domain=None, range=URIRef)
@@ -678,7 +631,8 @@ slots.location__municipality = Slot(uri=SCHEMA.addressLocality, name="location__
                    model_uri=DATA.location__municipality, domain=None, range=Optional[str])
 
 slots.cPV__id = Slot(uri=SKOS.notation, name="cPV__id", curie=SKOS.curie('notation'),
-                   model_uri=DATA.cPV__id, domain=None, range=URIRef)
+                   model_uri=DATA.cPV__id, domain=None, range=URIRef,
+                   pattern=re.compile(r'^[0-9]{8}$'))
 
 slots.cPV__label = Slot(uri=SKOS.prefLabel, name="cPV__label", curie=SKOS.curie('prefLabel'),
                    model_uri=DATA.cPV__label, domain=None, range=str)
@@ -704,21 +658,18 @@ slots.entity__entity_name = Slot(uri=ORG.name, name="entity__entity_name", curie
 slots.entity__valid_nif = Slot(uri=EXT.hasValidNif, name="entity__valid_nif", curie=EXT.curie('hasValidNif'),
                    model_uri=DATA.entity__valid_nif, domain=None, range=Optional[Union[bool, Bool]])
 
-slots.role__id = Slot(uri=ORG.identifier, name="role__id", curie=ORG.curie('identifier'),
-                   model_uri=DATA.role__id, domain=None, range=URIRef)
-
-slots.role__role_name = Slot(uri=ORG.name, name="role__role_name", curie=ORG.curie('name'),
-                   model_uri=DATA.role__role_name, domain=None, range=Optional[str])
-
-slots.tenurePeriod__start_date = Slot(uri=SCHEMA.startDate, name="tenurePeriod__start_date", curie=SCHEMA.curie('startDate'),
-                   model_uri=DATA.tenurePeriod__start_date, domain=None, range=Optional[Union[str, XSDDate]])
-
-slots.tenurePeriod__end_date = Slot(uri=SCHEMA.endDate, name="tenurePeriod__end_date", curie=SCHEMA.curie('endDate'),
-                   model_uri=DATA.tenurePeriod__end_date, domain=None, range=Optional[Union[str, XSDDate]])
-
 slots.person__id = Slot(uri=FOAF.identifier, name="person__id", curie=FOAF.curie('identifier'),
                    model_uri=DATA.person__id, domain=None, range=URIRef)
 
 slots.person__person_name = Slot(uri=FOAF.name, name="person__person_name", curie=FOAF.curie('name'),
                    model_uri=DATA.person__person_name, domain=None, range=Optional[str])
+
+slots.person__pep = Slot(uri=EXT.pep, name="person__pep", curie=EXT.curie('pep'),
+                   model_uri=DATA.person__pep, domain=None, range=Optional[Union[bool, Bool]])
+
+slots.Location_BROADER = Slot(uri=SKOS.BROADER, name="Location_BROADER", curie=SKOS.curie('BROADER'),
+                   model_uri=DATA.Location_BROADER, domain=Location, range=Optional[Union[str, LocationId]])
+
+slots.CPV_BROADER = Slot(uri=SKOS.BROADER, name="CPV_BROADER", curie=SKOS.curie('BROADER'),
+                   model_uri=DATA.CPV_BROADER, domain=CPV, range=Optional[Union[str, CPVId]])
 
