@@ -1,4 +1,4 @@
-# KNOWNET 🔍
+# KNOW-NET-COMPET 🔍
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Neo4j](https://img.shields.io/badge/Neo4j-Graph%20Database-008CC1?logo=neo4j)](https://neo4j.com/)
