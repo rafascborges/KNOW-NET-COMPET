@@ -8,7 +8,7 @@
 
 > **A knowledge graph for understanding the Portuguese public procurement market**
 
-KNOWNET is an ELT (Extract, Load, Transform) pipeline and knowledge graph system designed to model and analyze the Portuguese public procurement ecosystem. The project integrates multiple data sources—including public contracts, corporate ownership structures, and politically exposed persons—into a unified graph database for transparency and insight.
+KNOW-NET-COMPET is an ELT (Extract, Load, Transform) pipeline and knowledge graph system designed to model and analyze the Portuguese public procurement ecosystem. The project integrates multiple data sources—including public contracts, corporate ownership structures, and politically exposed persons—into a unified graph database for transparency and insight.
 
 ---
 
@@ -38,7 +38,7 @@ KNOWNET is an ELT (Extract, Load, Transform) pipeline and knowledge graph system
 
 ## 🏗️ Architecture
 
-KNOWNET follows a **medallion architecture** (Bronze → Silver → Gold) for data processing, with a final graph layer in Neo4j:
+KNOW-NET-COMPET follows a **medallion architecture** (Bronze → Silver → Gold) for data processing, with a final graph layer in Neo4j:
 
 <p align="center">
   <img src="./assets/Architecture_Proposal.drawio.png" alt="KNOWNET Architecture Diagram" width="900"/>
@@ -62,7 +62,7 @@ The pipeline flows through:
 | **CPV** | Common Procurement Vocabulary classification codes | Hierarchical taxonomy |
 | **NIF Registry** | Portuguese tax identification number validation | Entity verification |
 | **Municipal Entities** | Local government administration data | Location governance |
-| **PEP Data** | Politically Exposed Persons information | Risk indicators |
+| **PEP Data** | Politically Exposed Persons information | Public x Private connection |
 
 ---
 
@@ -87,7 +87,7 @@ The knowledge graph models the following entities and relationships:
 - `AWARDS_CONTRACT` — Tender → Contract
 - `IS_PROCURING_ENTITY_FOR` — Entity → Tender
 - `SIGNED_CONTRACT` — Entity → Contract
-- `SHAREHOLDER_OF` — Entity → Entity
+- `SHAREHOLDER_OF` — Entity → Entity (Currently focused on municipal entities participation)
 - `ASSOCIATED_WITH` — Person → Entity
 - `LOCATED_AT` — Entity → Location
 - `BROADER` — Hierarchical relationships (CPV, Location)
