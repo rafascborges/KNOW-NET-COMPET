@@ -64,7 +64,7 @@ GRAPH_LOADER_CONFIG = [
     # ("pep_gold", pep_mapper),
 ]
 
-GRAPH_ENRICHMENT_CONFIG = False
+GRAPH_ENRICHMENT_CONFIG = True
 
 def initialize_db_connector():
     """Initializes the database connector."""
@@ -181,7 +181,7 @@ def main():
     if GOLD_SOURCES_CONFIG:
         run_gold_layer(db_connector, GOLD_SOURCES_CONFIG)
 
-    if GRAPH_LOADER_CONFIG:
+    if GRAPH_LOADER_CONFIG or GRAPH_ENRICHMENT_CONFIG:
         run_graph_loader(db_connector, GRAPH_LOADER_CONFIG, GRAPH_ENRICHMENT_CONFIG)
 
 if __name__ == "__main__":

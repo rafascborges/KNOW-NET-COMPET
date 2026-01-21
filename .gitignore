@@ -17,4 +17,6 @@ pipeline.log
 data/
 docs/
 logs/
-.agent/ 
+.agent/  
+
+tests.ipynb

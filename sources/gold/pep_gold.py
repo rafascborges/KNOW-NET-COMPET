@@ -64,7 +64,7 @@ class PEPGoldSource(BaseDataSource):
             if nipc not in person_associations[nome]:
                 person_associations[nome][nipc] = {
                     'nif': nipc,
-                    'roles': [],
+                    'ri_roles': [],
                     'equity_interests': [],
                     'governments': [],
                     'parliaments': [],
@@ -72,7 +72,7 @@ class PEPGoldSource(BaseDataSource):
             
             # Append all values (including None) to maintain index alignment
             agg = person_associations[nome][nipc]
-            agg['roles'].append(role)
+            agg['ri_roles'].append(role)
             agg['equity_interests'].append(None)  # Will be filled by societies data
             agg['governments'].append(government)
             agg['parliaments'].append(parliament)
@@ -95,7 +95,7 @@ class PEPGoldSource(BaseDataSource):
             if nipc not in person_associations[nome]:
                 person_associations[nome][nipc] = {
                     'nif': nipc,
-                    'roles': [],
+                    'ri_roles': [],
                     'equity_interests': [],
                     'governments': [],
                     'parliaments': [],
@@ -103,7 +103,7 @@ class PEPGoldSource(BaseDataSource):
             
             # Append all values (including None) to maintain index alignment
             agg = person_associations[nome][nipc]
-            agg['roles'].append(None)  # Societies don't have roles
+            agg['ri_roles'].append(None)  # Societies don't have roles
             agg['equity_interests'].append(equity_interest)
             agg['governments'].append(government)
             agg['parliaments'].append(parliament)

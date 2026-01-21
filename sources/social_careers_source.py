@@ -1,6 +1,7 @@
 from elt_core.base_source import BaseDataSource
 from elt_core.transformations import to_dataframe, to_dict
 from elt_core.transformations import normalize_name
+from elt_core.transformations import roman_to_int
 
 
 class SocialCareersSource(BaseDataSource):
@@ -28,7 +29,7 @@ class SocialCareersSource(BaseDataSource):
         df['BASE_MATCHING'] = df['NIPC'].isin(nif_set)
 
         # Transform Roman Algorism into int
-        df['Governo'] = df['Governo'].str.replace('XXII', '22').str.replace('XXI', '21')
+        df['Governo'] = df['Governo'].apply(roman_to_int)
 
         # Transform Parliament float into string (via int to remove .0)
         # Handle NaN values by filling with empty string

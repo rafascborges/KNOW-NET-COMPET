@@ -81,19 +81,19 @@ def pep_mapper(raw_doc: dict) -> dict:
         # Filter out None values since Neo4j cannot store nulls in arrays
         properties = {}
         
-        roles = [v for v in assoc.get('roles', []) if v is not None]
+        roles = [v for v in assoc.get('ri_roles', []) if v is not None]
         if roles:
-            properties['roles'] = roles
+            properties['ri_roles'] = roles
             
         equity_interests = [v for v in assoc.get('equity_interests', []) if v is not None]
         if equity_interests:
             properties['equity_interests'] = equity_interests
             
-        governments = [v for v in assoc.get('governments', []) if v is not None]
+        governments = [int(v) for v in assoc.get('governments', []) if v is not None and v != '']
         if governments:
             properties['governments'] = governments
             
-        parliaments = [v for v in assoc.get('parliaments', []) if v is not None]
+        parliaments = [int(v) for v in assoc.get('parliaments', []) if v is not None and v != '']
         if parliaments:
             properties['parliaments'] = parliaments
         
@@ -101,7 +101,7 @@ def pep_mapper(raw_doc: dict) -> dict:
             'Person', person_id, 'Entity', nif, 'ASSOCIATED_WITH',
             properties=properties if properties else None
         ))
-    
+        
     # -------------------------------------------------------------------------
     # RETURN
     # -------------------------------------------------------------------------

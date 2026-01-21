@@ -418,3 +418,31 @@ def normalize_name(series: pd.Series) -> pd.Series:
         .str.replace('DR ', '', regex=False)
     )
     return result
+
+
+def roman_to_int(roman: str | int | float) -> int | None:
+    """Convert Roman numeral to integer. Returns None if invalid."""
+    if isinstance(roman, (int, float)):
+        if pd.isna(roman):
+            return None
+        return int(roman)
+    if not roman or not isinstance(roman, str):
+        return None
+    
+    values = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}
+    roman = roman.upper().strip()
+    
+    if not all(c in values for c in roman):
+        return None
+    
+    total = 0
+    prev = 0
+    for char in reversed(roman):
+        curr = values[char]
+        if curr < prev:
+            total -= curr
+        else:
+            total += curr
+        prev = curr
+    
+    return total
