@@ -47,5 +47,3 @@ services:
     restart: unless-stopped
     depends_on:
       - neo4j
-
-# NOTE: The top-level volumes block is now empty/removed
