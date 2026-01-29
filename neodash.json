@@ -1,0 +1,904 @@
+{
+  "title": "KNOW-NET-COMPET 🕸️",
+  "version": "2.4",
+  "settings": {
+    "pagenumber": 1,
+    "editable": true,
+    "fullscreenEnabled": false,
+    "parameters": {
+      "neodash_cpv_label": [],
+      "neodash_cpv_label_display": [],
+      "neodash_cpv_id_display": [
+        "03000000"
+      ],
+      "undefined": "true",
+      "undefined_display": "true",
+      "neodash_select_all_sub_levels": "",
+      "neodash_entity_id_1": "501576436",
+      "neodash_entity_id_1_display": "501576436",
+      "neodash_entity_id_2": "502310421",
+      "neodash_entity_id_2_display": "502310421",
+      "neodash_competitor": "Consulset - Consultadoria e Marketing, S.a",
+      "neodash_competitor_id": "503232785",
+      "neodash_procument_info": "direct",
+      "neodash_sample_size": "1000",
+      "neodash_test": [],
+      "neodash_test_display": [],
+      "neodash_company_A": "504441361",
+      "neodash_company_A_display": [],
+      "neodash_company_B": "600027350",
+      "neodash_company_B_display": [],
+      "neodash_shared_person": [
+        "P323189498"
+      ],
+      "neodash_shared_person_display": [],
+      "neodash_teste": [
+        "503934640"
+      ],
+      "neodash_teste_display": [
+        "503934640"
+      ],
+      "neodash_tender_procedure_type": [
+        "Concurso público simplificado",
+        "Consulta Prévia",
+        "Procedimento de negociação",
+        "Contratação excluída II"
+      ],
+      "neodash_tender_procedure_type_display": [
+        "Concurso público simplificado, ",
+        "Consulta Prévia, ",
+        "Procedimento de negociação, ",
+        "Contratação excluída II"
+      ],
+      "neodash_location_municipality_display": [
+        "Lisboa, ",
+        "Porto"
+      ],
+      "neodash_cpv_id": [
+        "03000000"
+      ],
+      "neodash_location_municipality": [
+        "Lisboa",
+        "Porto"
+      ]
+    },
+    "theme": "light"
+  },
+  "pages": [
+    {
+      "title": "Data Summary",
+      "reports": [
+        {
+          "id": "ed5a01cb-9728-4b5b-81c4-265820849aff",
+          "title": "Total number of nodes",
+          "query": "\nMATCH (n)\nRETURN COUNT(n)\n\n",
+          "width": 6,
+          "height": 2,
+          "x": 0,
+          "y": 0,
+          "type": "value",
+          "selection": {},
+          "settings": {},
+          "schema": []
+        },
+        {
+          "id": "337f4841-aab8-4966-936f-d3f2b7661073",
+          "title": "Number of nodes labels",
+          "query": "MATCH (n)\nRETURN labels(n), count(*) as count\nORDER BY count ASC\n",
+          "width": 6,
+          "height": 4,
+          "x": 6,
+          "y": 0,
+          "type": "bar",
+          "selection": {
+            "index": "labels(n)",
+            "value": "count",
+            "key": "(none)"
+          },
+          "settings": {
+            "marginBottom": 50,
+            "marginLeft": 75
+          },
+          "schema": []
+        },
+        {
+          "id": "46db723d-97ea-464f-a7d9-fe5c825bfbf2",
+          "title": "Number of nodes labels",
+          "query": "MATCH (n)-[e]->(m)\nRETURN COUNT(e)\n\n\n",
+          "width": 6,
+          "height": 2,
+          "x": 0,
+          "y": 2,
+          "type": "value",
+          "selection": {},
+          "settings": {},
+          "schema": []
+        },
+        {
+          "id": "29531532-82eb-4408-bb64-86478cc159e6",
+          "title": "Number of relationship types",
+          "query": "\nMATCH (n)-[e]->(m)\nRETURN type(e),count(*) as count\nORDER BY count ASC\n\n\n",
+          "width": 6,
+          "height": 4,
+          "x": 12,
+          "y": 0,
+          "type": "bar",
+          "selection": {
+            "index": "type(e)",
+            "value": "count",
+            "key": "(none)"
+          },
+          "settings": {
+            "marginLeft": 75,
+            "marginBottom": 100
+          },
+          "schema": []
+        },
+        {
+          "id": "77b9a7ad-8f72-45aa-b433-7ebf8ea85f33",
+          "title": "Graph schema ",
+          "query": "\ncall apoc.meta.graph()\n",
+          "width": 24,
+          "height": 6,
+          "x": 0,
+          "y": 4,
+          "type": "graph",
+          "selection": {
+            "CPV": "name",
+            "Contract": "name",
+            "Document": "name",
+            "Entity": "name",
+            "Location": "name",
+            "Person": "name",
+            "Tender": "name",
+            "SHAREHOLDER_OF": "(label)",
+            "HAS_DOCUMENT": "(label)",
+            "BROADER": "(label)",
+            "ASSOCIATED_WITH": "(label)",
+            "AWARDS_CONTRACT": "(label)",
+            "LOCATED_AT": "(label)",
+            "COMPETED_WITH": "(label)",
+            "EXECUTED_AT_LOCATION": "(label)",
+            "SIGNED_CONTRACT": "(label)",
+            "WON_TENDER": "(label)",
+            "HAS_CLASSIFICATION": "(label)",
+            "IS_PROCURING_ENTITY_FOR": "(label)",
+            "ADMINISTERED_BY": "(label)",
+            "IS_TENDERER_FOR": "(label)"
+          },
+          "settings": {},
+          "schema": [
+            [
+              "CPV",
+              "name",
+              "count"
+            ],
+            [
+              "Contract",
+              "name",
+              "count"
+            ],
+            [
+              "Document",
+              "name",
+              "count"
+            ],
+            [
+              "Entity",
+              "name",
+              "count"
+            ],
+            [
+              "Location",
+              "name",
+              "count"
+            ],
+            [
+              "Person",
+              "name",
+              "count"
+            ],
+            [
+              "Tender",
+              "name",
+              "count"
+            ],
+            [
+              "SHAREHOLDER_OF",
+              "count",
+              "type",
+              "in",
+              "out"
+            ],
+            [
+              "HAS_DOCUMENT",
+              "count",
+              "type",
+              "in",
+              "out"
+            ],
+            [
+              "BROADER",
+              "count",
+              "type",
+              "in",
+              "out"
+            ],
+            [
+              "ASSOCIATED_WITH",
+              "count",
+              "type",
+              "in",
+              "out"
+            ],
+            [
+              "AWARDS_CONTRACT",
+              "count",
+              "type",
+              "in",
+              "out"
+            ],
+            [
+              "LOCATED_AT",
+              "count",
+              "type",
+              "in",
+              "out"
+            ],
+            [
+              "COMPETED_WITH",
+              "count",
+              "type",
+              "in",
+              "out"
+            ],
+            [
+              "EXECUTED_AT_LOCATION",
+              "count",
+              "type",
+              "in",
+              "out"
+            ],
+            [
+              "SIGNED_CONTRACT",
+              "count",
+              "type",
+              "in",
+              "out"
+            ],
+            [
+              "WON_TENDER",
+              "count",
+              "type",
+              "in",
+              "out"
+            ],
+            [
+              "HAS_CLASSIFICATION",
+              "count",
+              "type",
+              "in",
+              "out"
+            ],
+            [
+              "IS_PROCURING_ENTITY_FOR",
+              "count",
+              "type",
+              "in",
+              "out"
+            ],
+            [
+              "ADMINISTERED_BY",
+              "count",
+              "type",
+              "in",
+              "out"
+            ],
+            [
+              "IS_TENDERER_FOR",
+              "count",
+              "type",
+              "in",
+              "out"
+            ]
+          ]
+        },
+        {
+          "id": "66fd731d-e3e7-49b2-b3ef-290a142111d7",
+          "title": "Number of Tenders trend ",
+          "query": "// 1. Match all Tenders in the database\nMATCH (t:Tender)\n\n// 2. Extract the year from the publication date\nWITH date(t.publication_date).year AS year, t\nWHERE year IS NOT NULL AND year <= 2024\n\n// 3. Aggregate by year\nWITH year, count(t) AS tenderCount\n\n// 4. Return the volume trend\nRETURN year AS Year, \n       tenderCount AS `Total Tenders`\nORDER BY Year ASC",
+          "width": 6,
+          "height": 4,
+          "x": 18,
+          "y": 0,
+          "type": "line",
+          "selection": {
+            "x": "Year",
+            "value": [
+              "Total Tenders"
+            ]
+          },
+          "settings": {
+            "marginLeft": 75
+          },
+          "schema": []
+        }
+      ]
+    },
+    {
+      "title": "Sector Explorer",
+      "reports": [
+        {
+          "id": "5c2780d7-f2fb-47f8-9b8f-def699a6a3ae",
+          "title": "CPV's",
+          "query": "MATCH (n:`CPV`) \nWHERE toLower(toString(n.`id`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`id` as value,  n.`id` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 6,
+          "height": 2,
+          "x": 0,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "CPV",
+            "propertyType": "id",
+            "propertyTypeDisplay": "id",
+            "parameterName": "neodash_cpv_id",
+            "multiSelector": true,
+            "backgroundColor": "#FF9900",
+            "manualParameterSave": true
+          },
+          "schema": []
+        },
+        {
+          "id": "e4edc89e-34bd-4927-9829-d97f27991b77",
+          "title": "",
+          "query": "// 1. Get the Top 10 Contracts and collect ALL entities first\nMATCH (cpv:CPV) \nWHERE cpv.id IN $neodash_cpv_id\nMATCH (c:Contract)-[r_cpv:HAS_CLASSIFICATION]->(cpv)\nWHERE CASE \n    WHEN $neodash_location_municipality IS NULL OR size($neodash_location_municipality) = 0 \n    THEN true\n    ELSE EXISTS {\n      MATCH (c)-[:EXECUTED_AT_LOCATION]->(loc:Location)\n      WHERE loc.municipality IN $neodash_location_municipality\n    }\n  END\nWITH c, cpv, r_cpv \nORDER BY c.final_value DESC \nLIMIT 10\nMATCH (t:Tender)-[r_award:AWARDS_CONTRACT]->(c)\nMATCH (ent:Entity)-[r_participation:IS_TENDERER_FOR|WON_TENDER]->(t)\nOPTIONAL MATCH (buyer:Entity)-[r_proc:IS_PROCURING_ENTITY_FOR]->(t)\nWITH collect(DISTINCT {c:c, cpv:cpv, r_cpv:r_cpv, t:t, r_award:r_award, \n                        ent:ent, r_participation:r_participation, \n                        buyer:buyer, r_proc:r_proc}) AS allRows\n// 2. Extract unique entities\nUNWIND allRows AS row\nWITH allRows, collect(DISTINCT row.ent) + collect(DISTINCT row.buyer) AS allEntities\n// 3. Process each row\nUNWIND allRows AS row\nWITH row, allEntities, row.ent AS currentEntity\n// 4. Find qualifying people (connected to 2+ entities)\nOPTIONAL MATCH (p:Person)-[r_assoc:ASSOCIATED_WITH]->(currentEntity)\nWHERE EXISTS {\n    MATCH (p)-[:ASSOCIATED_WITH]->(e:Entity)\n    WHERE e IN allEntities\n    WITH count(DISTINCT e) AS cnt\n    WHERE cnt > 1\n}\nRETURN row.c AS Contract, \n       row.cpv AS CPV, \n       row.r_cpv AS r_cpv, \n       row.t AS Tender, \n       row.r_award AS r_award, \n       row.ent AS Entity, \n       row.r_participation AS r_participation, \n       row.buyer AS Buyer, \n       row.r_proc AS r_proc, \n       p AS Person, \n       r_assoc",
+          "width": 12,
+          "height": 6,
+          "x": 12,
+          "y": 6,
+          "type": "graph",
+          "selection": {
+            "Contract": "final_value",
+            "CPV": "label",
+            "HAS_CLASSIFICATION": "(label)",
+            "Tender": "id",
+            "AWARDS_CONTRACT": "(label)",
+            "Entity": "entity_name",
+            "WON_TENDER": "(label)",
+            "IS_PROCURING_ENTITY_FOR": "(label)",
+            "IS_TENDERER_FOR": "(label)",
+            "Person": "id",
+            "ASSOCIATED_WITH": "(label)"
+          },
+          "settings": {
+            "type": "Custom Query",
+            "showPropertiesOnHover": true,
+            "rightClickToExpandNodes": true,
+            "styleRules": [
+              {
+                "field": "",
+                "condition": "=",
+                "value": "",
+                "customization": "node color",
+                "customizationValue": "black"
+              }
+            ],
+            "description": "What is the complete stakeholder and competitive ecosystem surrounding the 10 most valuable contracts in these sectors?"
+          },
+          "schema": [
+            [
+              "Contract",
+              "execution_deadline",
+              "contract_type",
+              "initial_value",
+              "final_value",
+              "id",
+              "signing_date"
+            ],
+            [
+              "CPV",
+              "level",
+              "id",
+              "label"
+            ],
+            [
+              "HAS_CLASSIFICATION"
+            ],
+            [
+              "Tender",
+              "numberOfTenderers",
+              "centralized_procedure",
+              "publication_date",
+              "id",
+              "procurement_method",
+              "environmental_criteria",
+              "procedure_type"
+            ],
+            [
+              "AWARDS_CONTRACT"
+            ],
+            [
+              "Entity",
+              "valid_nif",
+              "entity_name",
+              "id"
+            ],
+            [
+              "WON_TENDER"
+            ],
+            [
+              "IS_PROCURING_ENTITY_FOR"
+            ],
+            [
+              "IS_TENDERER_FOR"
+            ],
+            [
+              "Person",
+              "person_name",
+              "id"
+            ],
+            [
+              "ASSOCIATED_WITH",
+              "role"
+            ]
+          ]
+        },
+        {
+          "id": "5cfafd32-82a3-499c-bd03-779c7eec63c8",
+          "title": "Total Market Value",
+          "query": "MATCH (c:Contract)-[:HAS_CLASSIFICATION]->(n:CPV)\nWHERE n.id IN $neodash_cpv_id\n  AND CASE \n    WHEN $neodash_location_municipality IS NULL OR size($neodash_location_municipality) = 0 \n    THEN true\n    ELSE EXISTS {\n      MATCH (c)-[:EXECUTED_AT_LOCATION]->(loc:Location)\n      WHERE loc.municipality IN $neodash_location_municipality\n    }\n  END\nWITH sum(c.final_value) AS total\nRETURN \"€ \" + apoc.number.format(total, '#,##0.00') AS TotalFormattedValue",
+          "width": 6,
+          "height": 2,
+          "x": 0,
+          "y": 4,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "fontSize": 50
+          },
+          "schema": []
+        },
+        {
+          "id": "13a450f2-cf85-4683-9aba-96002da0f948",
+          "title": "Total Market Value Trend (€)",
+          "query": "// 1. Filter by the selected CPVs\nMATCH (cpv:CPV) \nWHERE cpv.id IN $neodash_cpv_id\n// 2. Connect to the Contracts\nMATCH (c:Contract)-[:HAS_CLASSIFICATION]->(cpv)\nWHERE CASE \n    WHEN $neodash_location_municipality IS NULL OR size($neodash_location_municipality) = 0 \n    THEN true\n    ELSE EXISTS {\n      MATCH (c)-[:EXECUTED_AT_LOCATION]->(loc:Location)\n      WHERE loc.municipality IN $neodash_location_municipality\n    }\n  END\n// 3. Aggregate everything into a single total per year\n// We use DISTINCT c to ensure a contract isn't counted twice if it has multiple matching CPVs\nWITH DISTINCT c, date(c.signing_date).year AS year\nWHERE year IS NOT NULL\n// 4. Return the unique total market value per year\nRETURN \n    year, \n    sum(c.final_value) AS `Total Market Value`\nORDER BY year ASC",
+          "width": 8,
+          "height": 4,
+          "x": 6,
+          "y": 0,
+          "type": "line",
+          "selection": {
+            "x": "year",
+            "value": [
+              "Total Market Value"
+            ]
+          },
+          "settings": {
+            "actionsRules": [
+              {
+                "condition": "Click",
+                "field": "",
+                "value": "",
+                "customization": "set variable",
+                "customizationValue": ""
+              }
+            ],
+            "legend": true,
+            "ignoreNonDefinedParams": true,
+            "colors": "category10",
+            "marginLeft": 100
+          },
+          "schema": []
+        },
+        {
+          "id": "fe0177cd-a38c-4505-aee6-40c491e792c9",
+          "title": "Top 5 Players (By contract values)",
+          "query": "// 1. Filter by selected CPVs\nMATCH (cpv:CPV)\nWHERE cpv.id IN $neodash_cpv_id\n// 2. Find Contracts with execution date and location filters\nMATCH (cpv)<-[:HAS_CLASSIFICATION]-(c:Contract)<-[:AWARDS_CONTRACT]-(t:Tender)<-[:WON_TENDER]-(winner:Entity)\nWHERE \n  CASE \n    WHEN $neodash_location_municipality IS NULL OR size($neodash_location_municipality) = 0 \n    THEN true\n    ELSE EXISTS {\n      MATCH (c)-[:EXECUTED_AT_LOCATION]->(loc:Location)\n      WHERE loc.municipality IN $neodash_location_municipality\n    }\n  END\n// 3. Calculate total market value for these specific CPVs (for Market Share %)\nWITH collect({winner: winner, val: c.final_value}) AS wins, sum(c.final_value) AS totalMarketValue\n// 4. Process each winner\nUNWIND wins AS win\nWITH win.winner AS player, \n     sum(win.val) AS totalWon, \n     count(*) AS winCount, \n     totalMarketValue\n// 5. Rank and Format\nORDER BY totalWon DESC\nLIMIT 5\nRETURN \n    player.id AS `Entity VAT`,\n    winCount AS `Contracts Won`,\n    \"(€) \" + apoc.number.format(totalWon) AS `Total Value`,\n    round((totalWon / totalMarketValue) * 100, 2) + \"%\" AS `Market Share`",
+          "width": 10,
+          "height": 4,
+          "x": 14,
+          "y": 0,
+          "type": "table",
+          "selection": {},
+          "settings": {}
+        },
+        {
+          "id": "4468d7cb-c474-4b5e-8220-39324db77a63",
+          "title": "Question",
+          "query": "### What is the complete stakeholder and competitive ecosystem surrounding the 10 most valuable contracts in these sectors?\n\n\n",
+          "width": 12,
+          "height": 2,
+          "x": 12,
+          "y": 4,
+          "type": "text",
+          "selection": {},
+          "settings": {},
+          "schema": []
+        },
+        {
+          "id": "41c7c7e5-c3e8-44b1-b36a-71347abfe523",
+          "title": "Procurement method (Change category to see each procedure type)",
+          "query": "//1. Match the CPVs provided in the parameter list\nMATCH (cpv:CPV)\nWHERE cpv.id IN $neodash_cpv_id\n// 2. Traversal: CPV -> Contract -> Tender\nMATCH (cpv)<-[:HAS_CLASSIFICATION]-(c:Contract)<-[:AWARDS_CONTRACT]-(t:Tender)\nWHERE CASE \n    WHEN $neodash_location_municipality IS NULL OR size($neodash_location_municipality) = 0 \n    THEN true\n    ELSE EXISTS {\n      MATCH (c)-[:EXECUTED_AT_LOCATION]->(loc:Location)\n      WHERE loc.municipality IN $neodash_location_municipality\n    }\n  END\n// 3. Aggregate by both dimensions\nWITH t.procurement_method AS Method, \n     t.procedure_type AS `Procedure Type`, \n     count(c) AS Count\n// 4. Return results for a Grouped or Stacked Bar Chart\nRETURN Method, `Procedure Type`, Count\nORDER BY Method, Count DESC",
+          "width": 12,
+          "height": 6,
+          "x": 0,
+          "y": 6,
+          "type": "bar",
+          "selection": {
+            "index": "Method",
+            "value": "Count",
+            "key": "(none)"
+          },
+          "settings": {
+            "groupMode": "grouped",
+            "layout": "horizontal",
+            "marginLeft": 100
+          },
+          "schema": []
+        },
+        {
+          "id": "164abcaf-20cf-4c9f-9199-dba792b3c3c0",
+          "title": "Location (Leave empty for overall)",
+          "query": "MATCH (n:`Location`) \nWHERE toLower(toString(n.`municipality`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`municipality` as value,  n.`municipality` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 6,
+          "height": 2,
+          "x": 0,
+          "y": 2,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Location",
+            "propertyType": "municipality",
+            "propertyTypeDisplay": "municipality",
+            "parameterName": "neodash_location_municipality",
+            "multiSelector": true,
+            "manualParameterSave": true,
+            "backgroundColor": "#FF9900"
+          },
+          "schema": []
+        },
+        {
+          "id": "d44cc819-0886-4f61-8a2d-dde7b9c3799f",
+          "title": "",
+          "query": "\nhttps://lh3.googleusercontent.com/sitesv/APaQ0SRgNWc5hyqLWuEop7ivT1xbZSxzjxYHPbJ-24ALs3CHaMnGifAvt-RZh9YubGYySjcrOghTL-zX3OgwxT0rXMvA649CxYgLjGynnHEpsHe70_gMqFJrh9oSgXKdyvw92PRlHB2g1rHwM-jQJLShyi44ofmabMoKi9ch7ZFWaPHix4HFHZxCwubI7pI4Lq3w_7jiDX-N8akm-NHNF_KhsUhRym1JEWFxtoYLVbY=w1280\n\n\n\n\n",
+          "width": 6,
+          "height": 2,
+          "x": 6,
+          "y": 4,
+          "type": "iframe",
+          "selection": {},
+          "settings": {},
+          "schema": []
+        }
+      ]
+    },
+    {
+      "title": "Entity Explorer",
+      "reports": [
+        {
+          "id": "b41d7438-efd4-4a28-a6f9-c5e37c8c23b2",
+          "title": "Entity VAT",
+          "query": "MATCH (n:`Entity`) \nWHERE toLower(toString(n.`id`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`id` as value,  n.`id` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 6,
+          "height": 2,
+          "x": 0,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Entity",
+            "propertyType": "id",
+            "propertyTypeDisplay": "id",
+            "parameterName": "neodash_entity_id_1",
+            "id": "1",
+            "backgroundColor": "#FF9900"
+          },
+          "schema": []
+        },
+        {
+          "id": "f290128d-27ed-4ee5-8024-334135eeef42",
+          "title": "Competition Sub-graphs",
+          "query": "// 1. Match the two selected entities\nMATCH (e1:Entity {id: $neodash_entity_id_1})\nMATCH (comp:Entity {id: $neodash_competitor_id})\n\n// 2. Use the Tender as a bridge to find shared competitions\nMATCH (e1)-[:IS_TENDERER_FOR|WON_TENDER]->(t:Tender)<-[:IS_TENDERER_FOR|WON_TENDER]-(comp)\n\n// 3. Find the Contracts resulting from these shared Tenders\nMATCH (t)-[:AWARDS_CONTRACT]->(c:Contract)\n\n// 4. Match the SIGNED_CONTRACT relationship for our two entities\n// This only returns the line if they actually won/signed that specific contract\nOPTIONAL MATCH (e1)-[r1:SIGNED_CONTRACT]->(c)\nOPTIONAL MATCH (comp)-[r2:SIGNED_CONTRACT]->(c)\n\n// 5. Match the CPV classifications for these contracts\nOPTIONAL MATCH (c)-[r_cpv:HAS_CLASSIFICATION]->(cpv:CPV)\n\n// 6. Return only the requested entities, contracts, and classifications\nRETURN e1, comp, c, cpv, r1, r2, r_cpv",
+          "width": 12,
+          "height": 6,
+          "x": 12,
+          "y": 4,
+          "type": "graph",
+          "selection": {
+            "Entity": "entity_name",
+            "Contract": "id",
+            "CPV": "label",
+            "SIGNED_CONTRACT": "(label)",
+            "HAS_CLASSIFICATION": "(label)"
+          },
+          "settings": {
+            "styleRules": [
+              {
+                "field": "Entity.id",
+                "condition": "=",
+                "value": "$neodash_entity_id_1",
+                "customization": "node color",
+                "customizationValue": "#FF9900"
+              },
+              {
+                "field": "Entity.id",
+                "condition": "=",
+                "value": "$neodash_competitor_id",
+                "customization": "node color",
+                "customizationValue": "#004BCC"
+              }
+            ],
+            "frozen": false,
+            "nodePositions": {},
+            "layout": "force-directed",
+            "rightClickToExpandNodes": true,
+            "refreshButtonEnabled": true
+          },
+          "schema": [
+            [
+              "Entity",
+              "valid_nif",
+              "entity_name",
+              "id"
+            ],
+            [
+              "Contract",
+              "execution_deadline",
+              "contract_type",
+              "initial_value",
+              "final_value",
+              "id",
+              "signing_date",
+              "causes_deadline_change",
+              "causes_price_change"
+            ],
+            [
+              "CPV",
+              "level",
+              "id",
+              "label"
+            ],
+            [
+              "SIGNED_CONTRACT"
+            ],
+            [
+              "HAS_CLASSIFICATION"
+            ]
+          ]
+        },
+        {
+          "id": "5d62d341-2f01-4e26-9a9d-9bdab4604d65",
+          "title": "Entity Summary ",
+          "query": "MATCH (e:Entity {id: $neodash_entity_id_1})\n// Find all unique tenders where the entity either participated OR won\nOPTIONAL MATCH (e)-[:IS_TENDERER_FOR|WON_TENDER]->(t:Tender)\nWITH e, count(DISTINCT t) AS totalUniqueTenders\n\n// Find only the tenders won to calculate the rate\nOPTIONAL MATCH (e)-[:WON_TENDER]->(tw:Tender)\nWITH e, totalUniqueTenders, count(DISTINCT tw) AS tendersWon\n\nWITH e, totalUniqueTenders, tendersWon,\n     CASE WHEN totalUniqueTenders > 0 \n          THEN round((tofloat(tendersWon) / totalUniqueTenders) * 100, 2) + \"%\" \n          ELSE \"0%\" END AS winRate\n\nUNWIND [\n  {Metric: \"Entity Name\", Info: e.entity_name},\n  {Metric: \"Total Unique Tenders\", Info: toString(totalUniqueTenders)},\n  {Metric: \"Tenders Won\", Info: toString(tendersWon)},\n  {Metric: \"Win Rate\", Info: winRate}\n] AS line\nRETURN line.Metric AS Metric, line.Info AS Information",
+          "width": 6,
+          "height": 4,
+          "x": 0,
+          "y": 2,
+          "type": "table",
+          "selection": {},
+          "settings": {}
+        },
+        {
+          "id": "b3f51c1f-4a0d-4334-9897-12aa06187fb1",
+          "title": "Top 10 Competitors (Click on VAT to visualize a Competition Sub-graph)",
+          "query": "// 1. Find the top 10 competitors using the pre-calculated edge\nMATCH (e1:Entity {id: $neodash_entity_id_1})-[rel:COMPETED_WITH]-(competitor:Entity)\nWITH e1, competitor, rel.competition_count AS jointTenders\nORDER BY jointTenders DESC\nLIMIT 10\n\n// 2. Identify shared tenders to calculate win/loss\nMATCH (e1)-[:IS_TENDERER_FOR|WON_TENDER]->(t:Tender)<-[:IS_TENDERER_FOR|WON_TENDER]-(competitor)\n\n// 3. Identify the winners and the CPVs\nOPTIONAL MATCH (winner:Entity)-[:WON_TENDER]->(t)\nOPTIONAL MATCH (t)-[:AWARDS_CONTRACT]->(c:Contract)-[:HAS_CLASSIFICATION]->(cpv:CPV)\n\n// 4. Aggregate performance statistics\nWITH competitor, jointTenders,\n     count(DISTINCT CASE WHEN winner = competitor THEN t END) AS competitorWins,\n     count(DISTINCT CASE WHEN winner = e1 THEN t END) AS e1Wins,\n     collect(cpv.label) AS cpvList\n\n// 5. Extract the Primary Battleground (Most frequent CPV)\nWITH competitor, jointTenders, competitorWins, e1Wins,\n     apoc.coll.frequencies(cpvList) AS frequencies\nUNWIND frequencies AS f\nWITH competitor, jointTenders, competitorWins, e1Wins, f\nORDER BY f.count DESC\nWITH competitor, jointTenders, competitorWins, e1Wins, collect(f.item)[0] AS topCPV\n\n// 6. Return using IDs as requested\nRETURN \n    competitor.id AS `Competitor VAT`,\n    jointTenders AS `Times Competed`,\n    topCPV AS `Main Sector`,\n    round((toFloat(competitorWins) / jointTenders) * 100, 1) + \"%\" AS `Competitor Success Rate`,\n    round((toFloat(e1Wins) / jointTenders) * 100, 1) + \"%\" AS `Entity Success Rate`\nORDER BY jointTenders DESC",
+          "width": 12,
+          "height": 4,
+          "x": 6,
+          "y": 0,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "actionsRules": [
+              {
+                "condition": "Click",
+                "field": "Competitor VAT",
+                "value": "Competitor VAT",
+                "customization": "set variable",
+                "customizationValue": "competitor_id"
+              }
+            ]
+          }
+        },
+        {
+          "id": "4e3f4891-7a48-4da9-b986-e7497e40b532",
+          "title": "Procedure Type Distribution",
+          "query": "// 1. Match the entity and all unique tenders it was involved in\nMATCH (e:Entity {id: $neodash_entity_id_1})\nMATCH (e)-[:IS_TENDERER_FOR|WON_TENDER]->(t:Tender)\n\n// 2. Aggregate by the two dimensions you want to visualize\nWITH t.procurement_method AS Method, \n     t.procedure_type AS `Procedure Type`, \n     count(t) AS Count\n\n// 3. Return columns for the Bar Chart\nRETURN Method, `Procedure Type`, Count\nORDER BY Count DESC",
+          "width": 6,
+          "height": 4,
+          "x": 18,
+          "y": 0,
+          "type": "bar",
+          "selection": {
+            "index": "Method",
+            "value": "Count",
+            "key": "Procedure Type"
+          },
+          "settings": {
+            "layout": "horizontal",
+            "colors": "category10",
+            "barValues": true,
+            "showOptionalSelections": true,
+            "customDimensions": false,
+            "groupMode": "stacked",
+            "labelSkipWidth": 1,
+            "labelSkipHeight": 1
+          },
+          "schema": []
+        },
+        {
+          "id": "d9461cb3-e317-4f89-82db-812072e9dafe",
+          "title": "Dominant Markets (80% Value Threshold)",
+          "query": "// 1. Get CPV values via the direct SIGNED_CONTRACT relationship\nMATCH (e:Entity {id: $neodash_entity_id_1})-[:SIGNED_CONTRACT]->(c:Contract)\nMATCH (c)-[:HAS_CLASSIFICATION]->(cpv:CPV)\nWITH cpv.label AS CPV_Label, sum(c.final_value) AS CPV_Value\nORDER BY CPV_Value DESC\n\n// 2. Calculate the Total Sum for this specific entity\nWITH collect({label: CPV_Label, value: CPV_Value}) AS data, \n     sum(CPV_Value) AS totalOverall\n\n// 3. Calculate Cumulative Percentage\nUNWIND range(0, size(data) - 1) AS idx\nWITH data[idx].label AS CPV_Label, \n     data[idx].value AS Value,\n     reduce(s = 0.0, i IN range(0, idx) | s + data[i].value) AS cumulativeSum,\n     totalOverall\nWITH CPV_Label, Value, (cumulativeSum / totalOverall) AS runningPercentage\n\n// 4. Pareto Filter (Top 80%)\nWHERE runningPercentage <= 0.8 \n   OR (runningPercentage > 0.8 AND (runningPercentage - (Value/totalOverall)) < 0.8)\n\nRETURN CPV_Label, Value\nORDER BY Value DESC",
+          "width": 12,
+          "height": 4,
+          "x": 0,
+          "y": 6,
+          "type": "bar",
+          "selection": {
+            "index": "CPV_Label",
+            "value": "Value",
+            "key": "(none)"
+          },
+          "settings": {
+            "formFields": [
+              {
+                "type": "Free Text",
+                "settings": {
+                  "type": "Free Text",
+                  "entityType": "Sample Size",
+                  "parameterName": "neodash_sample_size"
+                },
+                "query": "RETURN true;"
+              }
+            ],
+            "marginLeft": 75,
+            "marginBottom": 130,
+            "description": "This chart applies the 80/20 Pareto Principle to highlight the core sectors driving this entity’s revenue. By filtering for the CPV Classifications that generate 80% of its total won contract value, it isolates primary market specializations from minor or incidental projects.",
+            "backgroundColor": "none"
+          },
+          "schema": []
+        },
+        {
+          "id": "1e380660-807b-46ae-852d-f2cfc7944fd6",
+          "title": " ",
+          "query": "https://lh3.googleusercontent.com/sitesv/APaQ0SRgNWc5hyqLWuEop7ivT1xbZSxzjxYHPbJ-24ALs3CHaMnGifAvt-RZh9YubGYySjcrOghTL-zX3OgwxT0rXMvA649CxYgLjGynnHEpsHe70_gMqFJrh9oSgXKdyvw92PRlHB2g1rHwM-jQJLShyi44ofmabMoKi9ch7ZFWaPHix4HFHZxCwubI7pI4Lq3w_7jiDX-N8akm-NHNF_KhsUhRym1JEWFxtoYLVbY=w1280\n\n\n",
+          "width": 6,
+          "height": 2,
+          "x": 6,
+          "y": 4,
+          "type": "iframe",
+          "selection": {},
+          "settings": {},
+          "schema": []
+        }
+      ]
+    },
+    {
+      "title": "Conflict of Interest",
+      "reports": [
+        {
+          "id": "4f598fdf-7022-4a75-a6d8-df42b4365500",
+          "title": "Possible Conflict of Interest Table",
+          "query": "// 1. Find pairs of entities that have competed\nMATCH (e1:Entity)-[rel:COMPETED_WITH]->(e2:Entity)\nWHERE e1.id < e2.id // Use the unique ID property for consistent ordering\n\n// 2. Find all common Persons associated with both entities\nMATCH (e1)<-[:ASSOCIATED_WITH]-(p:Person)-[:ASSOCIATED_WITH]->(e2)\n\n// 3. Aggregate the Persons into a list grouped by the Company pair\nWITH e1, e2, rel.competition_count AS jointTenders, \n     collect(DISTINCT p.id) AS sharedPersonIDs\n\n// 4. Return results with one line per company pair\nRETURN \n    e1.id AS `Company A VAT`,\n    e2.id AS `Company B VAT`,\n    sharedPersonIDs AS `Shared Associated Person IDs`,\n    size(sharedPersonIDs) AS `Number of Shared Persons`,\n    jointTenders AS `Times Competed`\nORDER BY jointTenders DESC \nLIMIT 1000",
+          "width": 12,
+          "height": 4,
+          "x": 0,
+          "y": 0,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "actionsRules": [
+              {
+                "condition": "Click",
+                "field": "Company A VAT",
+                "value": "Company A VAT",
+                "customization": "set variable",
+                "customizationValue": "company_A"
+              },
+              {
+                "condition": "Click",
+                "field": "Company B VAT",
+                "value": "Company B VAT",
+                "customization": "set variable",
+                "customizationValue": "company_B"
+              },
+              {
+                "condition": "Click",
+                "field": "Shared Associated Person IDs",
+                "value": "Shared Associated Person IDs",
+                "customization": "set variable",
+                "customizationValue": "shared_person"
+              }
+            ],
+            "columnWidthsType": "Relative (%)",
+            "columnWidths": "[1,1,1,0.6,0.6]"
+          },
+          "schema": []
+        },
+        {
+          "id": "b2153bf6-f23e-4d32-8487-686a8011708a",
+          "title": "Possible Conflict of Interest Sub-graph (Right-click to expand nodes)",
+          "query": "// 1. Match the Persons (from list) and the two Companies\nMATCH (p:Person) WHERE p.id IN $neodash_shared_person\nMATCH (eA:Entity {id: $neodash_company_A})\nMATCH (eB:Entity {id: $neodash_company_B})\n\n// 2. Identify the direct structural links (Legal/Ownership)\n// Using optional match so the query doesn't fail if a specific person \n// in the list is only associated with one of the two entities\nOPTIONAL MATCH (p)-[r_assoc_a:ASSOCIATED_WITH]->(eA)\nOPTIONAL MATCH (p)-[r_assoc_b:ASSOCIATED_WITH]->(eB)\n\n// 3. Find shared Tenders where both companies competed\nMATCH (eA)-[r_bid_a:IS_TENDERER_FOR|WON_TENDER]->(t:Tender)<-[r_bid_b:IS_TENDERER_FOR|WON_TENDER]-(eB)\n\n// 4. Group by people and companies to limit the tender \"noise\" \n// This ensures we see all people, but not 10,000 tender nodes\nWITH p, eA, eB, r_assoc_a, r_assoc_b, t, r_bid_a, r_bid_b\n\n\n// 5. Return nodes and relationships for the Graph Map\nRETURN p, eA, eB, t, \n       r_assoc_a, r_assoc_b, r_bid_a, r_bid_b",
+          "width": 12,
+          "height": 6,
+          "x": 12,
+          "y": 0,
+          "type": "graph",
+          "selection": {
+            "Person": "id",
+            "Entity": "id",
+            "Tender": "id",
+            "ASSOCIATED_WITH": "(label)",
+            "IS_TENDERER_FOR": "(label)",
+            "WON_TENDER": "(label)"
+          },
+          "settings": {
+            "refreshButtonEnabled": true,
+            "layout": "radial",
+            "showPropertiesOnHover": true,
+            "rightClickToExpandNodes": true
+          },
+          "schema": [
+            [
+              "Person",
+              "pep",
+              "person_name",
+              "id"
+            ],
+            [
+              "Entity",
+              "valid_nif",
+              "entity_name",
+              "id"
+            ],
+            [
+              "Tender",
+              "numberOfTenderers",
+              "centralized_procedure",
+              "publication_date",
+              "id",
+              "procurement_method",
+              "environmental_criteria",
+              "procedure_type"
+            ],
+            [
+              "ASSOCIATED_WITH",
+              "role",
+              "parliaments",
+              "ri_roles"
+            ],
+            [
+              "IS_TENDERER_FOR"
+            ],
+            [
+              "WON_TENDER"
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "parameters": {},
+  "extensions": {
+    "active": true,
+    "activeReducers": [],
+    "actions": {
+      "active": true
+    },
+    "styling": {
+      "active": true
+    },
+    "advanced-charts": {
+      "active": true
+    },
+    "forms": {
+      "active": true
+    }
+  },
+  "uuid": "3a1761d9-0733-476c-b6fd-8818c3bc061e"
+}
