@@ -41,7 +41,7 @@ KNOW-NET-COMPET is an ELT (Extract, Load, Transform) pipeline and knowledge grap
 KNOW-NET-COMPET follows a **medallion architecture** (Bronze → Silver → Gold) for data processing, with a final graph layer in Neo4j:
 
 <p align="center">
-  <img src="./assets/Architecture_Proposal.drawio.png" alt="KNOWNET Architecture Diagram" width="900"/>
+  <img src="./assets/Architecture_Proposal.drawio.png" alt="KNOW-NET-COMPET Architecture Diagram" width="900"/>
 </p>
 
 The pipeline flows through:
@@ -71,7 +71,7 @@ The pipeline flows through:
 The knowledge graph models the following entities and relationships:
 
 <p align="center">
-  <img src="./assets/diagram-schema.png" alt="KNOWNET Graph Schema" width="900"/>
+  <img src="./assets/diagram-schema.png" alt="KNOW-NET-COMPET Graph Schema" width="900"/>
 </p>
 
 ### Nodes
@@ -107,7 +107,7 @@ The knowledge graph models the following entities and relationships:
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd KNOWNET_ELT
+   cd KNOW-NET-COMPET
    ```
 
 2. **Configure environment variables**
@@ -195,7 +195,7 @@ GRAPH_LOADER_CONFIG = [
 ## 📁 Project Structure
 
 ```
-KNOWNET_ELT/
+KNOW-NET-COMPET/
 ├── elt_core/                    # Core ELT framework
 │   ├── base_source.py           # Abstract base class for data sources
 │   ├── db_connector.py          # CouchDB connection and operations
@@ -233,7 +233,7 @@ KNOWNET_ELT/
 
 ---
 
-## 🛠️ Extending KNOWNET
+## 🛠️ Extending KNOW-NET-COMPET
 
 ### Adding a New Data Source
 
@@ -285,12 +285,6 @@ gen-plantuml schema.yaml > schema.puml
 
 # Generate Neo4j constraints
 uv run python gen_neo4j_constraints.py schema.yaml > constraints.cypher
-```
-
-### Running Tests
-
-```bash
-uv run pytest
 ```
 
 ---
